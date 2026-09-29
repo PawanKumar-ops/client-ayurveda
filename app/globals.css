@@ -1,32 +1,35 @@
 @import "tailwindcss";
 
-
 @theme {
+  /* Typography */
   --font-serif: 'Fraunces', Georgia, serif;
   --font-sans: 'Jost', system-ui, sans-serif;
 
-  /* Botanical Green Theme */
-  --color-ink: #24352b;
-  --color-cream: #f5f1e7;
-  --color-cream-soft: #faf8f2;
+  /* Premium Ayurvedic palette */
+  --color-ink: #24382d;
 
+  /* Warm ivory — replaces the yellowish cream */
+  --color-cream: #f1eee4;
+  --color-cream-soft: #f8f6ef;
+
+  /* Botanical greens */
   --color-green: #315c45;
-  --color-green-dark: #1f3d2d;
-  --color-green-soft: #dfe9df;
-  --color-sage: #a9bca8;
+  --color-green-dark: #1d3b2c;
+  --color-green-soft: #dce7dc;
+  --color-sage: #a8b9a5;
 
-  --color-accent: #c5a86a;
+  /* Subtle luxury accent */
+  --color-accent: #b59a63;
 
-  --color-footer: #193126;
-  
+  /* Deep forest footer */
+  --color-footer: #162b21;
 
-
-    --font-serif: 'Fraunces', Georgia, serif;
-  --font-sans: 'Jost', system-ui, sans-serif;
-
-
-
-  --color-yellow: #f6e96b;
+  /*
+   * Keep the existing yellow utility classes working,
+   * but make them green instead of yellow.
+   */
+  --color-yellow: #315c45;
+  --color-yellow-soft: #3d6b53;
 }
 
 html {
@@ -36,7 +39,7 @@ html {
 body {
   font-family: var(--font-sans);
   color: var(--color-ink);
-  background: #faf8f2;
+  background: #f8f6ef;
 }
 
 .font-serif-display {
@@ -47,18 +50,27 @@ body {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
+/* marquee */
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
 }
+
 .animate-marquee {
   animation: marquee 30s linear infinite;
 }
+
 .animate-marquee-slow {
   animation: marquee 40s linear infinite;
 }

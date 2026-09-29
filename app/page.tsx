@@ -277,6 +277,38 @@ const pressLogos = [
   { name: 'POPSUGAR', img: img.popsugar },
 ]
 
+const faqs = [
+  {
+    q: 'What makes Yubhi Ayurveda different?',
+    a: 'Yubhi Ayurveda brings the timeless principles of Ayurveda into simple, thoughtful everyday rituals. Our approach focuses on natural ingredients, mindful routines, and care designed for modern living.',
+  },
+
+  {
+    q: 'Are Yubhi products suitable for everyday use?',
+    a: 'Our products are created with everyday rituals in mind, with a focus on gentle, thoughtful care. For specific skin, hair, or wellness concerns, we recommend checking the individual product details and ingredients.',
+  },
+
+  {
+    q: 'What ingredients do you use?',
+    a: 'We focus on thoughtfully selected botanical and naturally derived ingredients inspired by Ayurvedic traditions. Each product page provides more information about the ingredients and their intended use.',
+  },
+
+  {
+    q: 'How do I choose the right Ayurvedic ritual?',
+    a: 'Start with what your daily routine needs most — whether that is hair care, skin care, or everyday wellness. Explore our collections and product details to build a ritual that fits naturally into your lifestyle.',
+  },
+
+  {
+    q: 'How should I use Yubhi products?',
+    a: 'Every product is designed with a simple routine in mind. Follow the usage instructions provided on the individual product page and make it a consistent part of your daily ritual.',
+  },
+
+  {
+    q: 'Where can I find information about shipping and returns?',
+    a: 'You can find the latest information about delivery, shipping, and returns on our Shipping & Returns page. If you have any questions about an order, our team is here to help.',
+  },
+]
+
 const footerCols = [
   {
     title: 'EXPLORE',
@@ -313,10 +345,16 @@ function Stars({ value = '4.9' }: { value?: string }) {
   )
 }
 
-function YellowButton({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+function YellowButton({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
   return (
     <button
-      className={`inline-flex items-center justify-center rounded-full bg-yellow px-8 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-ink transition-colors hover:bg-yellow-soft ${className}`}
+      className={`inline-flex items-center justify-center rounded-full bg-green px-8 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-white transition-all duration-200 hover:bg-green-dark ${className}`}
     >
       {children}
     </button>
@@ -348,7 +386,7 @@ function ProductCard({
             </span>
           )}
           {p.off && (
-            <span className="rounded-full bg-yellow px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-ink">
+            <span className="rounded-full bg-green-soft px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-green-dark">
               {p.off}
             </span>
           )}
@@ -401,7 +439,7 @@ function Carousel({ children }: { children: React.ReactNode }) {
         <button
           onClick={() => scroll(-1)}
           aria-label="Previous"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/20 text-ink transition-all duration-200 hover:bg-yellow hover:scale-105"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/20 text-ink transition-all duration-200 hover:bg-green hover:text-white hover:border-green hover:scale-105"
         >
           <Icon
             icon="solar:arrow-left-linear"
@@ -413,7 +451,7 @@ function Carousel({ children }: { children: React.ReactNode }) {
         <button
           onClick={() => scroll(1)}
           aria-label="Next"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/20 text-ink transition-all duration-200 hover:bg-yellow hover:scale-105"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/20 text-ink transition-all duration-200 hover:bg-green hover:text-white hover:border-green hover:scale-105"
         >
           <Icon
             icon="solar:arrow-right-linear"
@@ -426,6 +464,90 @@ function Carousel({ children }: { children: React.ReactNode }) {
   )
 }
 
+function FAQ() {
+  const [open, setOpen] = useState<number | null>(0)
+
+  return (
+    <section className="bg-cream px-4 py-14 md:px-8 md:py-20">
+      <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-10 md:grid-cols-[0.9fr_1.1fr] md:gap-16">
+
+        {/* Left */}
+        <div className="flex flex-col gap-5 md:sticky md:top-28 md:self-start">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-green">
+            Frequently Asked
+          </p>
+
+          <h2 className="font-serif-display text-3xl font-light leading-tight text-ink md:text-[42px]">
+            Frequently Asked
+            <br />
+            Questions
+          </h2>
+
+          <p className="max-w-md text-[14px] leading-relaxed text-ink/65">
+            Everything you need to know about our rituals, ingredients, and orders.
+            Still curious? Our team is always here to help.
+          </p>
+
+          <div>
+            <YellowButton>Contact Us</YellowButton>
+          </div>
+        </div>
+
+        {/* FAQ list */}
+        <div className="flex flex-col">
+          {faqs.map((f, i) => {
+            const isOpen = open === i
+
+            return (
+              <div
+                key={f.q}
+                className="border-b border-green/15"
+              >
+                <button
+                  onClick={() => setOpen(isOpen ? null : i)}
+                  className="flex w-full items-center justify-between gap-6 py-5 text-left"
+                  aria-expanded={isOpen}
+                >
+                  <span className="text-[16px] font-medium leading-snug text-ink md:text-[18px]">
+                    {f.q}
+                  </span>
+
+                  <span
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-300 ${isOpen
+                      ? 'rotate-45 bg-green text-white'
+                      : 'border border-green/20 bg-white text-green'
+                      }`}
+                  >
+                    <Icon
+                      icon="solar:add-linear"
+                      width="18"
+                      height="18"
+                    />
+                  </span>
+                </button>
+
+                <div
+                  className={`grid transition-all duration-300 ease-out ${isOpen
+                    ? 'grid-rows-[1fr] opacity-100'
+                    : 'grid-rows-[0fr] opacity-0'
+                    }`}
+                >
+                  <div className="overflow-hidden">
+                    <p className="pb-6 pr-10 text-[14px] leading-relaxed text-ink/65">
+                      {f.a}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+      </div>
+    </section>
+  )
+}
+
 /* ---------------------------------- app ----------------------------------- */
 
 export default function App() {
@@ -434,25 +556,19 @@ export default function App() {
   const [moodTab, setMoodTab] = useState<'HAIR CARE' | 'LIP CARE'>('HAIR CARE')
 
   const heroSlides = [
-    {
-      dk: img.heroDesktop1,
-      mb: img.heroMobile1,
-    },
-    {
-      dk: img.heroDesktop2,
-      mb: img.heroMobile2,
-    },
-  ]
+  img.heroDesktop1,
+  img.heroDesktop2,
+]
 
   return (
     <div className="min-h-screen bg-white text-ink">
       {/* announcement bar */}
-      <div className="overflow-hidden bg-[#fde877] py-2 text-white">
+      <div className="overflow-hidden bg-green py-2 text-white">
         <div className="flex w-max animate-marquee whitespace-nowrap">
           {[...Array(2)].map((_, dup) => (
             <div key={dup} className="flex">
               {[...announcements, ...announcements, ...announcements].map((a, i) => (
-                <span key={i} className="mx-8 text-[0.875rem] text-[#545454] font-bold uppercase tracking-[0.18em]">
+                <span key={i} className="mx-8 text-[0.875rem] text-white font-bold uppercase tracking-[0.18em]">
                   {a}
                 </span>
               ))}
@@ -544,18 +660,11 @@ export default function App() {
               href="#"
               className={`block transition-opacity duration-700 ${i === slide ? 'opacity-100' : 'absolute inset-0 opacity-0'}`}
             >
-              <picture>
-                <source
-                  media="(min-width: 750px)"
-                  srcSet={s.dk}
-                />
-
-                <img
-                  src={s.mb}
-                  alt="Ayurvedic wellness"
-                  className="h-[420px] w-full object-cover object-top md:h-[500px] lg:h-[560px]"
-                />
-              </picture>
+              <img
+                src={s}
+                alt="Ayurvedic wellness"
+                className="h-[420px] w-full object-cover object-top md:h-[500px] lg:h-[560px]"
+              />
             </a>
           ))}
 
@@ -605,7 +714,7 @@ export default function App() {
           <h2 className="font-serif-display text-3xl font-light md:text-[40px]">Shop Best-Sellers</h2>
           <a
             href="#"
-            className="rounded-full border border-ink/25 px-6 py-2 text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-yellow"
+            className="rounded-full border border-ink/25 px-6 py-2 text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-green hover:text-white hover:border-green"
           >
             View All
           </a>
@@ -819,14 +928,17 @@ export default function App() {
       </section>
 
       {/* marquee strip */}
-      <section className="overflow-hidden border-y border-ink/10 bg-yellow py-4">
+      <section className="overflow-hidden border-y border-green/20 bg-green py-4 text-white">
         <div className="flex w-max animate-marquee-slow whitespace-nowrap">
           {[...Array(2)].map((_, dup) => (
             <div key={dup} className="flex items-center">
               {[...Array(6)].flatMap(() => marqueeItems).map((m, i) => (
-                <span key={i} className="mx-6 flex items-center gap-6 font-serif-display text-lg italic md:text-2xl">
+                <span
+                  key={i}
+                  className="mx-6 flex items-center gap-6 font-serif-display text-lg italic text-white md:text-2xl"
+                >
                   {m}
-                  <span className="text-ink/40">✦</span>
+                  <span className="text-white/40">·</span>
                 </span>
               ))}
             </div>
@@ -852,39 +964,21 @@ export default function App() {
 
       {/* quote + press */}
       {/* brand philosophy */}
-<section className="bg-cream px-4 py-16 md:px-8 md:py-24">
-  <div className="mx-auto max-w-[900px] text-center">
-    <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink/50">
-      The Yubhi Philosophy
-    </p>
+      <section className="bg-cream px-4 py-16 md:px-8 md:py-24">
+        <div className="mx-auto max-w-[900px] text-center">
+          <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink/50">
+            The Yubhi Philosophy
+          </p>
 
-    <blockquote className="font-serif-display text-2xl font-light leading-snug md:text-[34px]">
-      &ldquo;Rooted in the timeless wisdom of Ayurveda, we bring
-      thoughtful rituals and nature-inspired care into everyday life.&rdquo;
-    </blockquote>
-  </div>
-</section>
-
-      {/* reviews */}
-      <section className="grid grid-cols-1 items-center gap-8 px-4 py-14 md:grid-cols-2 md:px-8">
-        <div className="flex flex-col items-start gap-5 md:pl-12">
-          <div className="flex items-center gap-3">
-            <span className="font-serif-display text-4xl md:text-5xl">500,000+</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl tracking-[-2px] text-[#e7c200]">★★★★★</span>
-            <span className="text-lg">reviews</span>
-          </div>
-          <YellowButton>Read All Reviews</YellowButton>
-        </div>
-        <div>
-          <img
-            src={img.beforeAfter}
-            alt="Before and afters"
-            className="w-full rounded-2xl object-cover"
-          />
+          <blockquote className="font-serif-display text-2xl font-light leading-snug md:text-[34px]">
+            &ldquo;Rooted in the timeless wisdom of Ayurveda, we bring
+            thoughtful rituals and nature-inspired care into everyday life.&rdquo;
+          </blockquote>
         </div>
       </section>
+
+      {/* frequently asked questions */}
+      <FAQ />
 
       {/* footer */}
       <footer className="bg-footer px-4 py-14 text-cream md:px-8">
@@ -931,7 +1025,7 @@ export default function App() {
                   placeholder="Email"
                   className="flex-1 rounded-full bg-transparent px-5 py-3 text-[13px] text-cream ring-1 ring-cream/30 placeholder:text-cream/40 focus:outline-none focus:ring-cream/60"
                 />
-                <button className="rounded-full bg-yellow px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-ink hover:bg-yellow-soft">
+                <button className="rounded-full bg-cream px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-green-dark transition-colors hover:bg-green-soft">
                   Subscribe
                 </button>
               </form>
@@ -939,7 +1033,7 @@ export default function App() {
           </div>
 
           <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-cream/15 pt-6 text-[11px] text-cream/50 md:flex-row">
-            <span>© indē wild IN 2026</span>
+            <span>© yubhi ayurveda IN 2026</span>
             <div className="flex gap-4">
               <a href="#" className="hover:text-cream">Instagram</a>
               <a href="#" className="hover:text-cream">TikTok</a>
