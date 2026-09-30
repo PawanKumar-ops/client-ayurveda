@@ -89,46 +89,17 @@ function Stepper({ qty, onChange, title }: { qty: number; onChange: (n: number) 
 
 function SuggestionTile({ p }: { p: Suggestion }) {
   const { add } = useCart()
-
   return (
     <div className="flex w-[calc((100%-20px)/2.3)] shrink-0 snap-start flex-col sm:w-[calc((100%-24px)/2)]">
-      {/* Image */}
       <div className="aspect-square overflow-hidden bg-cream-soft">
-        <img
-          src={p.img}
-          alt={p.title}
-          loading="lazy"
-          className="h-full w-full object-cover"
-        />
+        <img src={p.img} alt={p.title} loading="lazy" className="h-full w-full object-cover" />
       </div>
-
-      {/* Product info */}
-      <h3
-        className="mt-3 line-clamp-2 min-h-[34px] text-[13px] font-medium leading-[17px] text-ink"
-        title={p.title}
-      >
-        {p.title}
-      </h3>
-
-      <p
-        className="mt-1 line-clamp-2 min-h-[30px] text-[12px] leading-[15px] text-ink/60"
-        title={p.desc}
-      >
-        {p.desc}
-      </p>
-
-      {/* Price */}
-      <div className="mt-2 flex h-5 items-baseline gap-2 text-[13px]">
+      <h3 className="mt-3 text-[13px] font-medium leading-snug text-ink">{p.title}</h3>
+      <p className="mt-1 text-[12px] leading-snug text-ink/60">{p.desc}</p>
+      <div className="mt-2 flex items-baseline gap-2 text-[13px]">
         <span>{p.price}</span>
-
-        {p.old && (
-          <s className="text-ink/40">
-            {p.old}
-          </s>
-        )}
+        {p.old && <s className="text-ink/40">{p.old}</s>}
       </div>
-
-      {/* Button */}
       <button
         onClick={() => add(p)}
         className="mt-3 h-10 w-full border border-ink text-[12px] tracking-[0.04em] text-ink transition-colors hover:bg-ink hover:text-white"

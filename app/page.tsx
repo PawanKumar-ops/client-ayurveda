@@ -4,7 +4,8 @@ import { useRef, useState } from 'react'
 import { Icon } from '@iconify/react'
 import Footer from '@/components/Footer'
 import Header from '@/components/Header'
-import CartDrawer, { CartProvider, useCart } from '@/components/CartDrawer'
+import ProductCard from '@/components/ProductCard'
+import { bestSellers, perfumeMists, moodProducts } from '@/lib/products'
 
 const img = {
   // HERO
@@ -115,81 +116,6 @@ const img = {
 
 /* ---------------------------------- data ---------------------------------- */
 
-const announcements = [
-  'FREE Scent Sleeve Charm With Every Mist',
-  'Meet Your New Signature Scents: Solar Skin & After Heat',
-]
-
-const topNav = ['YUBHI AYURVEDA', 'HOME', 'SHOP', 'CONTACT']
-
-const bestSellers = [
-  {
-    title: 'Ashwagandha Wellness',
-    desc: 'Daily Ayurvedic wellness support',
-    price: '₹899',
-    old: '₹1,099',
-    off: '18% OFF',
-    img: img.mysteryBox,
-  },
-  {
-    title: 'Amla Hair Oil',
-    desc: 'Traditional Ayurvedic hair nourishment',
-    price: '₹699',
-    old: '₹899',
-    off: '22% OFF',
-    img: img.scentStories,
-  },
-  {
-    title: 'Herbal Skin Care',
-    desc: 'Gentle botanical care for everyday skin',
-    price: '₹799',
-    old: '₹999',
-    off: '20% OFF',
-    img: img.sleekBackSet,
-    rating: '4.9',
-  },
-  {
-    title: 'Ayurvedic Wellness Duo',
-    desc: 'Two essentials for your daily ritual',
-    price: '₹1,299',
-    old: '₹1,599',
-    off: '19% OFF',
-    img: img.growRepairDuo,
-  },
-  {
-    title: 'Natural Self-Care Set',
-    desc: 'Simple Ayurvedic care for everyday living',
-    price: '₹1,499',
-    old: '₹1,799',
-    off: '17% OFF',
-    img: img.selfCareStaples,
-  },
-  {
-    title: 'Herbal Hair Care',
-    desc: 'Botanical care inspired by Ayurveda',
-    price: '₹899',
-    old: '₹1,099',
-    off: '18% OFF',
-    img: img.champiHairOil,
-  },
-  {
-    title: 'Natural Skin Balm',
-    desc: 'Plant-based nourishment for your skin',
-    price: '₹499',
-    old: '₹599',
-    off: '17% OFF',
-    img: img.dewyLipTreatment,
-  },
-  {
-    title: 'Daily Wellness Essentials',
-    desc: 'Ayurvedic essentials for your routine',
-    price: '₹999',
-    old: '₹1,199',
-    off: '17% OFF',
-    img: img.champiSleekStick,
-  },
-]
-
 const galleryImages = [
   img.gallery1,
   img.gallery2,
@@ -213,50 +139,6 @@ const wellnessHighlights = [
   },
 ]
 
-const perfumeMists = [
-  {
-    title: 'Solar Skin Hair & Body Perfume Mist',
-    desc: 'Fresh Citrus Breeze',
-    price: '₹1,299',
-    rating: '4.9',
-    img: img.solarSkin,
-  },
-  {
-    title: 'After Heat Hair & Body Perfume Mist',
-    desc: 'Spiced Vanilla Haze',
-    price: '₹1,299',
-    rating: '4.9',
-    img: img.afterHeat,
-  },
-]
-
-
-const moodProducts = [
-  {
-    title: 'Daily Wellness Ritual',
-    desc: 'Simple Ayurvedic care for every day.',
-    price: '₹1,299',
-    old: '₹1,599',
-    off: '19% OFF',
-    freeGift: true,
-    img: img.solarAfter,
-  },
-  {
-    title: 'Ayurvedic Hair Care',
-    desc: 'Nourishing botanical hair care.',
-    price: '₹899',
-    freeGift: true,
-    img: img.solarSkin,
-  },
-  {
-    title: 'Natural Skin Care',
-    desc: 'Gentle care inspired by Ayurveda.',
-    price: '₹799',
-    freeGift: true,
-    img: img.afterHeat,
-  },
-]
-
 const marqueeItems = ['Simplified Ayurveda.', 'Advanced Biochemistry.', 'Clinically Backed.']
 
 const categories = [
@@ -272,12 +154,6 @@ const categories = [
     name: 'LIP CARE',
     img: img.lipCare,
   },
-]
-
-const pressLogos = [
-  { name: 'VOGUE', img: img.vogue },
-  { name: 'Forbes', img: img.forbes },
-  { name: 'POPSUGAR', img: img.popsugar },
 ]
 
 const faqs = [
@@ -314,15 +190,6 @@ const faqs = [
 
 /* ------------------------------- primitives ------------------------------- */
 
-function Stars({ value = '4.9' }: { value?: string }) {
-  return (
-    <span className="inline-flex items-center gap-1 text-[11px] text-ink/70">
-      <span className="tracking-[-1px] text-[#e7c200]">★★★★★</span>
-      <span>{value}</span>
-    </span>
-  )
-}
-
 function YellowButton({
   children,
   className = '',
@@ -336,80 +203,6 @@ function YellowButton({
     >
       {children}
     </button>
-  )
-}
-
-function ProductCard({
-  p,
-}: {
-  p: {
-    title: string
-    desc: string
-    price: string
-    old?: string
-    off?: string
-    img: string
-    rating?: string
-    freeGift?: boolean
-    newBadge?: boolean
-  }
-}) {
-  const { add } = useCart()
-  return (
-    <div className="group flex w-full flex-col">
-      <div className="relative overflow-hidden rounded-2xl bg-cream-soft">
-        <div className="absolute left-3 top-3 z-10 flex flex-col gap-1.5">
-          {p.newBadge && (
-            <span className="rounded-full bg-white/90 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-ink">
-              New
-            </span>
-          )}
-          {p.off && (
-            <span className="rounded-full bg-green-soft px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-green-dark">
-              {p.off}
-            </span>
-          )}
-          {p.freeGift && (
-            <span className="rounded-full bg-white/90 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-ink">
-              Free Gift
-            </span>
-          )}
-        </div>
-        <img
-          src={p.img}
-          alt={p.title}
-          loading="lazy"
-          className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-        />
-        <div className="pointer-events-none absolute inset-x-3 bottom-3 hidden translate-y-3 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 md:block">
-          <button
-            onClick={() => add({ title: p.title, price: p.price, old: p.old, img: p.img })}
-            className="pointer-events-auto w-full rounded-full bg-ink py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-white"
-          >
-            Add to cart
-          </button>
-        </div>
-      </div>
-      <div className="mt-3 flex flex-col">
-        <h3 className="text-[15px] font-medium leading-snug text-ink">{p.title}</h3>
-        <p className="mt-1 text-[12px] leading-snug text-ink/55">{p.desc}</p>
-        {p.rating && (
-          <div className="mt-1.5">
-            <Stars value={p.rating} />
-          </div>
-        )}
-        <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-[15px] font-medium text-ink">{p.price}</span>
-          {p.old && <span className="text-[12px] text-ink/40 line-through">{p.old}</span>}
-        </div>
-        <button
-          onClick={() => add({ title: p.title, price: p.price, old: p.old, img: p.img })}
-          className="mt-3 w-full rounded-full bg-ink py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-white md:hidden"
-        >
-          Add to cart
-        </button>
-      </div>
-    </div>
   )
 }
 
@@ -540,7 +333,6 @@ function FAQ() {
 
 export default function App() {
   const [slide, setSlide] = useState(0)
-  const [menuOpen, setMenuOpen] = useState(false)
   const [moodTab, setMoodTab] = useState<'HAIR CARE' | 'LIP CARE'>('HAIR CARE')
 
   const heroSlides = [
@@ -549,10 +341,9 @@ export default function App() {
 ]
 
   return (
-    <CartProvider>
     <div className="min-h-screen bg-white text-ink">
       {/* header and announcement bar */}
-      <Header/>
+      <Header />
 
       {/* hero slideshow */}
       <section className="relative">
@@ -685,7 +476,7 @@ export default function App() {
               Lightweight, non-drying formula, made with naturally derived ingredients, perfect for everyday use.
             </p>
             <div>
-              <YellowButton>Don't Mist This</YellowButton>
+              <YellowButton>Don&apos;t Mist This</YellowButton>
             </div>
           </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
@@ -885,8 +676,6 @@ export default function App() {
 
       {/* footer */}
       <Footer/>
-      <CartDrawer />
     </div>
-    </CartProvider>
   )
 }
