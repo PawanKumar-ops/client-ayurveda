@@ -2,6 +2,8 @@
 
 import { useRef, useState } from 'react'
 import { Icon } from '@iconify/react'
+import Footer from '@/components/Footer'
+import Header from '@/components/Header'
 
 const img = {
   // HERO
@@ -309,31 +311,6 @@ const faqs = [
   },
 ]
 
-const footerCols = [
-  {
-    title: 'EXPLORE',
-    links: [
-      'Sunrise to Starlight Duo',
-      'DLT Ice Ice Baby',
-      'DLT Sweet Treat',
-      'Down to Dusk Set',
-      'Dewy Lip Treatment Minis Kit',
-      'Champi Sleek Stick',
-      'Champi Bond Repair Duo',
-      'Moonlight Growth™ Scalp Serum',
-      'Champi Hair Oil',
-    ],
-  },
-  {
-    title: 'KNOW MORE',
-    links: ['Contact Us', 'FAQs', 'Build Your Own Bundle', 'Report a Bug', 'Gifting', 'Ingredients', 'Refer & Earn'],
-  },
-  {
-    title: 'INFO',
-    links: ['Terms & Conditions', 'Shipping & Returns', 'Privacy Policy'],
-  },
-]
-
 /* ------------------------------- primitives ------------------------------- */
 
 function Stars({ value = '4.9' }: { value?: string }) {
@@ -562,94 +539,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-white text-ink">
-      {/* announcement bar */}
-      <div className="overflow-hidden bg-green py-2 text-white">
-        <div className="flex w-max animate-marquee whitespace-nowrap">
-          {[...Array(2)].map((_, dup) => (
-            <div key={dup} className="flex">
-              {[...announcements, ...announcements, ...announcements].map((a, i) => (
-                <span key={i} className="mx-8 text-[0.875rem] text-white font-bold uppercase tracking-[0.18em]">
-                  {a}
-                </span>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* header */}
-      <header className="sticky top-0 z-50 border-b border-ink/10 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-4 px-4 py-4 md:px-8">
-          {/* left nav */}
-          <nav className="hidden flex-1 items-center gap-6 lg:flex">
-            {topNav.map((n) => (
-              <a key={n} href="#" className="text-[11px] font-medium uppercase tracking-[0.14em] text-ink hover:opacity-60">
-                {n}
-              </a>
-            ))}
-          </nav>
-
-          {/* mobile menu button */}
-          <button
-            className="flex flex-col gap-1.5 lg:hidden"
-            aria-label="Menu"
-            onClick={() => setMenuOpen((o) => !o)}
-          >
-            <span className="h-[1.5px] w-6 bg-ink" />
-            <span className="h-[1.5px] w-6 bg-ink" />
-            <span className="h-[1.5px] w-6 bg-ink" />
-          </button>
-
-          {/* logo */}
-          <a href="#" className="shrink-0 font-serif-display text-[26px] font-normal italic tracking-tight md:text-[30px]">
-            yubhi ayurveda
-          </a>
-
-          {/* right icons */}
-          <div className="flex flex-1 items-center justify-end gap-5 text-ink">
-            <button
-              aria-label="Search"
-              className="flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200 hover:bg-cream"
-            >
-              <Icon
-                icon="solar:magnifier-linear"
-                width="21"
-                height="21"
-                strokeWidth="1.5"
-              />
-            </button>
-
-            <button
-              aria-label="Cart"
-              className="relative flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200 hover:bg-cream"
-            >
-              <Icon
-                icon="solar:bag-3-linear"
-                width="21"
-                height="21"
-                strokeWidth="1.5"
-              />
-
-              <span className="absolute -right-0.5 -top-0.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-green px-1 text-[9px] font-semibold text-white">
-                0
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* mobile menu */}
-        {menuOpen && (
-          <div className="border-t border-ink/10 bg-white lg:hidden">
-            <nav className="flex flex-col px-6 py-4">
-              {topNav.map((n) => (
-                <a key={n} href="#" className="border-b border-ink/5 py-3 text-[12px] font-medium uppercase tracking-[0.14em]">
-                  {n}
-                </a>
-              ))}
-            </nav>
-          </div>
-        )}
-      </header>
+      {/* header and announcement bar */}
+      <Header/>
 
       {/* hero slideshow */}
       <section className="relative">
@@ -981,67 +872,7 @@ export default function App() {
       <FAQ />
 
       {/* footer */}
-      <footer className="bg-footer px-4 py-14 text-cream md:px-8">
-        <div className="mx-auto max-w-[1400px]">
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-5">
-            {/* brand */}
-            <div className="md:col-span-2">
-              <div className="font-serif-display text-3xl italic">yubhi ayurveda</div>
-              <p className="mt-4 max-w-xs text-[13px] leading-relaxed text-cream/70">
-                A conscious beauty ecosystem founded by @DiipaKhosla. Available worldwide.
-              </p>
-            </div>
-
-            {footerCols.map((col) => (
-              <div key={col.title}>
-                <h4 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-cream/60">{col.title}</h4>
-                <ul className="flex flex-col gap-2.5">
-                  {col.links.map((l) => (
-                    <li key={l}>
-                      <a href="#" className="text-[13px] text-cream/80 hover:text-cream">
-                        {l}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          {/* stay in the know */}
-          <div className="mt-12 border-t border-cream/15 pt-10">
-            <div className="grid grid-cols-1 gap-6 md:max-w-md">
-              <h4 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cream/60">Stay in the know</h4>
-              <p className="text-[13px] leading-relaxed text-cream/70">
-                Join our beauty community to get exclusive access to product pre-launches, behind the scenes content,
-                special community only offers. Sign up now to get 10% off your order.
-              </p>
-              <form
-                className="flex items-center gap-3"
-                onSubmit={(e) => e.preventDefault()}
-              >
-                <input
-                  type="email"
-                  placeholder="Email"
-                  className="flex-1 rounded-full bg-transparent px-5 py-3 text-[13px] text-cream ring-1 ring-cream/30 placeholder:text-cream/40 focus:outline-none focus:ring-cream/60"
-                />
-                <button className="rounded-full bg-cream px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-green-dark transition-colors hover:bg-green-soft">
-                  Subscribe
-                </button>
-              </form>
-            </div>
-          </div>
-
-          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-cream/15 pt-6 text-[11px] text-cream/50 md:flex-row">
-            <span>© yubhi ayurveda IN 2026</span>
-            <div className="flex gap-4">
-              <a href="#" className="hover:text-cream">Instagram</a>
-              <a href="#" className="hover:text-cream">TikTok</a>
-              <a href="#" className="hover:text-cream">YouTube</a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer/>
     </div>
   )
 }
