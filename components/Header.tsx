@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useCart } from "@/components/CartDrawer"
 import { Icon } from "@iconify/react"
 
 const announcements = [
@@ -12,6 +13,7 @@ const topNav = ["YUBHI AYURVEDA", "HOME", "SHOP", "CONTACT"]
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const cart = useCart()
 
   return (
     <>
@@ -74,6 +76,7 @@ export default function Header() {
       
                   <button
                     aria-label="Cart"
+                    onClick={() => cart.setOpen(true)}
                     className="relative flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200 hover:bg-cream"
                   >
                     <Icon
@@ -84,7 +87,7 @@ export default function Header() {
                     />
       
                     <span className="absolute -right-0.5 -top-0.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-green px-1 text-[9px] font-semibold text-white">
-                      0
+                      {cart.count}
                     </span>
                   </button>
                 </div>

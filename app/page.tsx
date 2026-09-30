@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import { Icon } from '@iconify/react'
 import Footer from '@/components/Footer'
 import Header from '@/components/Header'
+import CartDrawer, { CartProvider, useCart } from '@/components/CartDrawer'
 
 const img = {
   // HERO
@@ -353,6 +354,7 @@ function ProductCard({
     newBadge?: boolean
   }
 }) {
+  const { add } = useCart()
   return (
     <div className="group flex w-full flex-col">
       <div className="relative overflow-hidden rounded-2xl bg-cream-soft">
@@ -379,10 +381,13 @@ function ProductCard({
           loading="lazy"
           className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
         />
-        <div className="pointer-events-none absolute inset-x-3 bottom-3 translate-y-3 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-          <div className="pointer-events-auto rounded-full bg-ink py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-white">
+        <div className="pointer-events-none absolute inset-x-3 bottom-3 hidden translate-y-3 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 md:block">
+          <button
+            onClick={() => add({ title: p.title, price: p.price, old: p.old, img: p.img })}
+            className="pointer-events-auto w-full rounded-full bg-ink py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-white"
+          >
             Add to cart
-          </div>
+          </button>
         </div>
       </div>
       <div className="mt-3 flex flex-col">
@@ -397,6 +402,12 @@ function ProductCard({
           <span className="text-[15px] font-medium text-ink">{p.price}</span>
           {p.old && <span className="text-[12px] text-ink/40 line-through">{p.old}</span>}
         </div>
+        <button
+          onClick={() => add({ title: p.title, price: p.price, old: p.old, img: p.img })}
+          className="mt-3 w-full rounded-full bg-ink py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-white md:hidden"
+        >
+          Add to cart
+        </button>
       </div>
     </div>
   )
@@ -538,6 +549,7 @@ export default function App() {
 ]
 
   return (
+    <CartProvider>
     <div className="min-h-screen bg-white text-ink">
       {/* header and announcement bar */}
       <Header/>
@@ -873,6 +885,8 @@ export default function App() {
 
       {/* footer */}
       <Footer/>
+      <CartDrawer />
     </div>
+    </CartProvider>
   )
 }
