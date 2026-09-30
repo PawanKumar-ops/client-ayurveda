@@ -1,5 +1,8 @@
+"use client"
+
+import { useRouter } from 'next/navigation'
 import { useCart } from '@/components/CartDrawer'
-import type { Product } from '@/lib/products'
+import { slugify, type Product } from '@/lib/products'
 
 function Stars({ value = '4.9' }: { value?: string }) {
   return (
@@ -11,7 +14,10 @@ function Stars({ value = '4.9' }: { value?: string }) {
 }
 
 export default function ProductCard({ p }: { p: Product }) {
+  const router = useRouter()
   const { add } = useCart()
+  const href = `/product?slug=${slugify(p.title)}`
+  const open = (e: React.MouseEvent) => { e.preventDefault(); router.push(href) }
   return (
     <div className="group flex w-full flex-col">
       <div className="relative overflow-hidden rounded-2xl bg-cream-soft">
@@ -32,12 +38,14 @@ export default function ProductCard({ p }: { p: Product }) {
             </span>
           )}
         </div>
+        <a href={href} onClick={open} aria-label={p.title}>
         <img
           src={p.img}
           alt={p.title}
           loading="lazy"
           className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
         />
+        </a>
         <div className="pointer-events-none absolute inset-x-3 bottom-3 hidden translate-y-3 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 md:block">
           <button
             onClick={() => add({ title: p.title, price: p.price, old: p.old, img: p.img })}
@@ -48,7 +56,7 @@ export default function ProductCard({ p }: { p: Product }) {
         </div>
       </div>
       <div className="mt-3 flex flex-col">
-        <h3 className="text-[15px] font-medium leading-snug text-ink">{p.title}</h3>
+        <h3 className="text-[15px] font-medium leading-snug text-ink"><a href={href} onClick={open} className="hover:text-green">{p.title}</a></h3>
         <p className="mt-1 text-[12px] leading-snug text-ink/55">{p.desc}</p>
         {p.rating && (
           <div className="mt-1.5">

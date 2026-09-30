@@ -143,3 +143,40 @@ export const allProducts: ShopProduct[] = [
   ...moodProducts.map((p) => ({ ...p, category: 'Rituals' })),
   ...hairAndBody.map((p) => ({ ...p, category: 'Hair & Body' })),
 ]
+
+export const slugify = (title: string) =>
+  title.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+
+export const findProduct = (slug: string) => allProducts.find((p) => slugify(p.title) === slug)
+
+/* extra detail shown on the product page */
+export const lifestyleShots = [
+  { label: 'The Reset', img: 'https://img.magnific.com/free-photo/young-man-applying-anti-dandruff-product_23-2149345780.jpg?w=1480' },
+  { label: 'A Deep Cleanse', img: 'https://img.magnific.com/free-photo/wooden-spoons-with-plants-top-view_23-2149339713.jpg?w=1480' },
+]
+
+export const productDetails = (p: ShopProduct) => ({
+  about: `${p.title} is a clinically tested, Ayurveda-first ritual that brings balance back to your routine. It combines modern skincare actives, microbiome-supporting ingredients and time-honoured botanicals — gentle enough for every day, effective from the very first use.*`,
+  benefits: [
+    'Deeply nourishes and restores balance',
+    'Removes buildup, pollution and hard-water deposits',
+    'Gently soothes and reduces irritation',
+    'Keeps skin and strands hydrated, without stripping',
+    'Leaves a fresh, cooling, botanical feel',
+    'Visible results after just one use',
+  ],
+  size: p.category === 'Perfume Mists' ? '100ml' : p.category === 'Rituals' ? 'Kit' : '300ml',
+  userResults: ['Deeply cleanses buildup', 'Gently removes oils & flakes', 'Rehydrates & restores', 'Provides a cooling, calming effect'],
+  clinical: [
+    { stat: '96', unit: 'Hour', text: 'lasting freshness and balance' },
+    { stat: '82%', text: 'reported visibly reduced buildup in just 1 use*' },
+    { stat: '88%', text: 'reported less dryness and flakiness in just 1 use*' },
+    { stat: '97%', text: 'reduction in hard water–induced roughness**' },
+  ],
+  info: [
+    { q: 'Key Ingredients', a: 'Amla, Reetha, Shikakai, Ashwagandha and cold-pressed botanical oils, paired with Niacinamide, Zinc PCA and Salicylic Acid.' },
+    { q: 'How To Use', a: 'Apply to damp skin or hair, massage gently for 60 seconds and rinse well. Use 2–3 times a week or as part of your daily ritual.' },
+    { q: 'Full Ingredient List', a: 'Aqua, Sodium Cocoyl Isethionate, Glycerin, Emblica Officinalis Fruit Extract, Sapindus Mukorossi Fruit Extract, Acacia Concinna Extract, Withania Somnifera Root Extract, Niacinamide, Zinc PCA, Fragrance.' },
+    { q: 'Shipping & Returns', a: 'Free shipping on orders above ₹499. Easy 7-day returns on unopened products.' },
+  ],
+})
