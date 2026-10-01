@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Icon } from '@iconify/react'
+import { useRouter } from 'next/navigation'
 
 export type CartProduct = { title: string; price: string; old?: string; img: string }
 export type CartItem = CartProduct & { qty: number }
@@ -143,6 +144,7 @@ export default function CartDrawer() {
   const { items, count, subtotal, open, setOpen, setQty, remove } = useCart()
   const rail = useRef<HTMLDivElement>(null)
   const [page, setPage] = useState(0)
+  const router = useRouter();
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
@@ -259,7 +261,13 @@ export default function CartDrawer() {
             <span className="font-medium">{inr(subtotal)}</span>
           </div>
           <div className="flex flex-col gap-3">
-            <button className="h-12 w-full bg-green text-[14px] tracking-[0.02em] text-white transition-colors hover:bg-green-dark">
+            <button
+              onClick={() => {
+  setOpen(false)
+  router.push("/checkout")
+}}
+              className="h-12 w-full bg-green text-[14px] tracking-[0.02em] text-white transition-colors hover:bg-green-dark"
+            >
               Check out
             </button>
             <button

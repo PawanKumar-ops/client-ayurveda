@@ -103,16 +103,15 @@ function ProductDetail() {
                     onClick={() => setActive(i)}
                     aria-label={`View image ${i + 1}`}
                     aria-current={i === active}
-                    className={`aspect-square w-[72px] shrink-0 overflow-hidden rounded-xl bg-cream-soft ring-offset-2 transition-all duration-300 md:w-[72px] ${
-                      i === active ? 'ring-2 ring-accent' : 'opacity-55 hover:opacity-100'
-                    }`}
+                    className={`aspect-square w-[72px] shrink-0 overflow-hidden rounded-xl bg-cream-soft ring-offset-2 transition-all duration-300 md:w-[72px] ${i === active ? 'ring-2 ring-accent' : 'opacity-55 hover:opacity-100'
+                      }`}
                   >
                     <img src={src} alt="" className="h-full w-full object-cover" />
                   </button>
                 ))}
               </div>
               <div
-                className="group/main relative mx-auto aspect-square w-full overflow-hidden rounded-2xl bg-cream-soft ring-1 ring-ink/5 lg:max-w-[calc(100vh-200px)]"
+                className="group/main relative mx-auto aspect-square w-full overflow-hidden rounded-2xl bg-cream-soft ring-1 ring-ink/5 lg:max-w-[700px]"
                 onTouchStart={(e) => (touchX.current = e.touches[0].clientX)}
                 onTouchEnd={(e) => {
                   const dx = e.changedTouches[0].clientX - touchX.current
@@ -125,9 +124,8 @@ function ProductDetail() {
                     src={src}
                     alt={i === active ? p.title : ''}
                     aria-hidden={i !== active}
-                    className={`absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                      i === active ? 'scale-100 opacity-100' : 'scale-[1.04] opacity-0'
-                    }`}
+                    className={`absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${i === active ? 'scale-100 opacity-100' : 'scale-[1.04] opacity-0'
+                      }`}
                   />
                 ))}
 
@@ -145,9 +143,18 @@ function ProductDetail() {
                     key={dir}
                     onClick={() => go(dir === 'prev' ? -1 : 1)}
                     aria-label={dir === 'prev' ? 'Previous image' : 'Next image'}
-                    className={`absolute top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/50 bg-white/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_8px_24px_-10px_rgba(36,56,45,0.5)] backdrop-blur-md backdrop-saturate-150 transition-all duration-300 hover:scale-105 hover:bg-white/35 md:opacity-0 md:group-hover/main:opacity-100 ${
-                      dir === 'prev' ? 'left-4 md:-translate-x-2 md:group-hover/main:translate-x-0' : 'right-4 md:translate-x-2 md:group-hover/main:translate-x-0'
-                    }`}
+                    className={`absolute top-1/2 flex h-10 w-10 -translate-y-1/2
+                         items-center justify-center
+                         rounded-full bg-white/90
+                         text-ink shadow-[0_4px_18px_rgba(0,0,0,0.12)]
+                         backdrop-blur-sm
+                         transition-all duration-300
+                         hover:bg-white
+                          md:opacity-0 md:group-hover/main:opacity-100
+                        ${dir === 'prev'
+                        ? 'left-4 md:-translate-x-2 md:group-hover/main:translate-x-0'
+                        : 'right-4 md:translate-x-2 md:group-hover/main:translate-x-0'
+                      }`}
                   >
                     <Icon icon={dir === 'prev' ? 'solar:arrow-left-linear' : 'solar:arrow-right-linear'} width="20" className="drop-shadow" />
                   </button>
@@ -184,16 +191,6 @@ function ProductDetail() {
             </div>
             <p className="text-[13px] text-ink/70">(inclusive of all taxes)</p>
 
-            <div className="mt-3 inline-flex flex-col gap-1.5 rounded-md bg-cream px-3 py-2">
-              <div className="flex items-center justify-between gap-6 text-[13px]">
-                <span>or <span className="font-semibold text-green">{inr(toNum(p.price) / 3)}</span> /month (3 months)</span>
-                <span className="rounded bg-accent px-2 py-0.5 text-[9px] font-bold uppercase text-white">Buy on EMI</span>
-              </div>
-              <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
-                <span className="rounded-full bg-white/80 px-2 py-0.5"><b className="italic">UPI</b> &amp; Cards Accepted</span>
-                <span className="rounded-full bg-white/80 px-2 py-0.5">0 Extra Cost</span>
-              </div>
-            </div>
 
             <div className="mt-5 text-[15px] leading-[1.6] text-ink/80">
               {more ? (
