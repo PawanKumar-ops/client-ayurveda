@@ -59,14 +59,8 @@ function ShopContent() {
       <Header />
     <main>
       {/* banner */}
-      <section className="bg-cream px-4 py-14 text-center md:py-20">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
-          <a href="/" onClick={(e) => { e.preventDefault(); router.push('/') }} className="hover:text-ink">Home</a> / Shop
-        </p>
+      <section className="bg-cream px-4 py-14 text-center">
         <h1 className="mt-3 font-serif-display text-4xl font-light md:text-[52px]">{q ? <>Results for “{q}”</> : 'All Products'}</h1>
-        <p className="mx-auto mt-4 max-w-lg text-[14px] leading-relaxed text-ink/70">
-          Simplified Ayurveda for hair, skin and everyday wellness — thoughtfully crafted rituals, all in one place.
-        </p>
       </section>
 
       <section id="shop-grid" className="mx-auto max-w-[1500px] scroll-mt-24 px-4 py-10 md:px-8 md:py-14">
