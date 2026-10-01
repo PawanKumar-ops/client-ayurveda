@@ -139,8 +139,8 @@ export default function SearchPopdown({ open, onClose }: { open: boolean; onClos
                             key={p.title}
                             role="option"
                             aria-selected={false}
-                            href={`/product/${slugify(p.title)}`}
-                            onClick={(e) => { e.preventDefault(); go(`/product/${slugify(p.title)}`) }}
+                            href={`/product?slug=${slugify(p.title)}`}
+                            onClick={(e) => { e.preventDefault(); go(`/product?slug=${slugify(p.title)}`) }}
                             className="group block max-w-[225px]"
                           >
                             <div className="aspect-square overflow-hidden rounded-[10px] bg-cream-soft">
