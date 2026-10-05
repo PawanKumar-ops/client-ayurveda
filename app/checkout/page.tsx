@@ -20,11 +20,6 @@ const METHODS = [
   { id: 'express', label: 'Express', note: 'Delivered in 1–2 business days', price: 149 },
 ] as const
 
-const STORES = [
-  { id: 'bandra', name: 'indē wild — Bandra West', addr: '24 Pali Hill Road, Mumbai 400050', hours: 'Open 11am – 9pm' },
-  { id: 'indira', name: 'indē wild — Indiranagar', addr: '100 Feet Road, Bengaluru 560038', hours: 'Open 11am – 9pm' },
-]
-
 const FREE_SHIPPING_AT = 999
 const COD_FEE = 0
 const CODES: Record<string, { pct: number; label: string }> = {
@@ -40,7 +35,7 @@ const EMPTY: Addr = {
   firstname: '', lastname: '', email: '', phone: '', address1: '', address2: '', city: '', postalcode: '', state: '', nickname: '',
 }
 
-function validate(a: Addr, pickup: boolean) {
+function validate(a: Addr) {
   const e: Partial<Record<keyof Addr, string>> = {}
   if (!a.firstname.trim()) e.firstname = 'Please enter first name'
   if (!a.lastname.trim()) e.lastname = 'Please enter last name'
@@ -48,12 +43,10 @@ function validate(a: Addr, pickup: boolean) {
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(a.email)) e.email = 'Please use the valid email address format. Example: name@example.com'
   if (!/^[6-9]\d{9}$/.test(a.phone.replace(/\D/g, '').slice(-10)) || a.phone.replace(/\D/g, '').length < 10)
     e.phone = 'Please enter a valid 10-digit mobile number'
-  if (!pickup) {
-    if (!a.address1.trim()) e.address1 = 'Please enter street address'
-    if (!a.city.trim()) e.city = 'Please enter the city'
-    if (!/^[1-9]\d{5}$/.test(a.postalcode)) e.postalcode = 'Please enter a valid 6-digit PIN code'
-    if (!a.state) e.state = 'Please select state'
-  }
+  if (!a.address1.trim()) e.address1 = 'Please enter street address'
+  if (!a.city.trim()) e.city = 'Please enter the city'
+  if (!/^[1-9]\d{5}$/.test(a.postalcode)) e.postalcode = 'Please enter a valid 6-digit PIN code'
+  if (!a.state) e.state = 'Please select state'
   return e
 }
 
@@ -79,9 +72,8 @@ function Field({
           autoComplete={autoComplete}
           aria-invalid={!!error}
           onChange={(e) => onChange(e.target.value)}
-          className={`peer h-14 w-full border bg-white px-4 pb-2 pt-6 text-[15px] text-ink outline-none transition-colors focus:border-ink ${
-            error ? 'border-[#b3261e]' : 'border-ink/30'
-          } ${onClear && value ? 'pr-10' : ''}`}
+          className={`peer h-14 w-full border bg-white px-4 pb-2 pt-6 text-[15px] text-ink outline-none transition-colors focus:border-ink ${error ? 'border-[#b3261e]' : 'border-ink/30'
+            } ${onClear && value ? 'pr-10' : ''}`}
         />
         <label
           htmlFor={id}
@@ -188,21 +180,6 @@ function Summary({
       </div>
       <ul className="flex max-h-[420px] flex-col gap-[3px] overflow-y-auto border-t border-ink/10 [scrollbar-width:thin]">
         {items.map((i) => <LineItem key={i.title} i={i} editable={editable && editing} />)}
-        <li className="bg-cream px-4 py-5">
-          <h3 className="text-[14px] font-medium text-ink">Complimentary Gifts</h3>
-          <div className="mt-4 flex items-center gap-4">
-            <div className="grid size-[88px] shrink-0 place-items-center bg-green-soft">
-              <Icon icon="solar:gift-linear" className="size-9 text-green" />
-            </div>
-            <div className="flex flex-1 items-start justify-between gap-3">
-              <div>
-                <p className="text-[14px] font-medium text-ink">Rosemary Travel Hair Oil 10mL</p>
-                <p className="mt-1.5 text-[12px] text-ink">Quantity: 1</p>
-              </div>
-              <span className="text-[14px] font-medium text-ink">Complimentary</span>
-            </div>
-          </div>
-        </li>
       </ul>
 
       {editable && (
@@ -256,8 +233,6 @@ export default function CheckoutPage() {
   const cart = useCart()
   const [step, setStep] = useState(1)
   const [maxStep, setMaxStep] = useState(1)
-  const [pickup, setPickup] = useState(false)
-  const [store, setStore] = useState(STORES[0].id)
   const [addr, setAddr] = useState<Addr>(EMPTY)
   const [errors, setErrors] = useState<Partial<Record<keyof Addr, string>>>({})
   const [tried, setTried] = useState(false)
@@ -269,7 +244,7 @@ export default function CheckoutPage() {
   const [codeError, setCodeError] = useState('')
   const [agree, setAgree] = useState(false)
   const [placing, setPlacing] = useState(false)
-  const [order, setOrder] = useState<null | { id: string; items: CartItem[]; totals: Totals; addr: Addr; pickup: boolean; count: number }>(null)
+  const [order, setOrder] = useState<null | { id: string; items: CartItem[]; totals: Totals; addr: Addr; count: number }>(null)
   const [summaryOpen, setSummaryOpen] = useState(false)
 
   useEffect(() => {
@@ -279,21 +254,21 @@ export default function CheckoutPage() {
   const set = (k: keyof Addr) => (v: string) => {
     const next = { ...addr, [k]: v }
     setAddr(next)
-    if (tried) setErrors(validate(next, pickup))
+    if (tried) setErrors(validate(next))
   }
 
   const totals: Totals = useMemo(() => {
     const subtotal = cart.subtotal
     const discount = applied ? Math.round((subtotal * CODES[applied].pct) / 100) : 0
     const m = METHODS.find((x) => x.id === method)!
-    const shipping = pickup ? 0 : m.price
-    const shipDiscount = !pickup && method === 'standard' && subtotal - discount >= FREE_SHIPPING_AT ? shipping : 0
+    const shipping = m.price
+    const shipDiscount = method === 'standard' && subtotal - discount >= FREE_SHIPPING_AT ? shipping : 0
     return {
       subtotal, discount, shipping, shipDiscount,
-      shipLabel: pickup ? 'Store pickup' : m.label,
+      shipLabel: m.label,
       total: Math.max(0, subtotal - discount + shipping - shipDiscount + COD_FEE),
     }
-  }, [cart.subtotal, applied, method, pickup])
+  }, [cart.subtotal, applied, method])
 
   const applyCode = () => {
     const c = code.trim()
@@ -312,20 +287,20 @@ export default function CheckoutPage() {
   const submitAddress = (e: React.FormEvent) => {
     e.preventDefault()
     setTried(true)
-    const errs = validate(addr, pickup)
+    const errs = validate(addr)
     setErrors(errs)
     if (Object.keys(errs).length) {
       document.getElementById(Object.keys(errs)[0])?.focus()
       return
     }
-    go(pickup ? 3 : 2)
+    go(2)
   }
 
   const placeOrder = () => {
     if (!agree || placing) return
     setPlacing(true)
     setTimeout(() => {
-      const snapshot = { id: 'IW' + Date.now().toString().slice(-8), items: cart.items, totals, addr, pickup, count: cart.count }
+      const snapshot = { id: 'IW' + Date.now().toString().slice(-8), items: cart.items, totals, addr, count: cart.count }
       cart.items.forEach((i) => cart.remove(i.title))
       setOrder(snapshot)
       setPlacing(false)
@@ -348,20 +323,16 @@ export default function CheckoutPage() {
         </p>
         <div className="mt-10 grid gap-[3px] text-left sm:grid-cols-2">
           <div className="bg-cream p-5">
-            <p className="text-[12px] uppercase tracking-[0.12em] text-ink/60">{order.pickup ? 'Pickup from' : 'Delivering to'}</p>
+            <p className="text-[12px] uppercase tracking-[0.12em] text-ink/60">Delivering to</p>
             <p className="mt-2 text-[14px] leading-relaxed text-ink">
-              {order.pickup ? (
-                <>{STORES.find((s) => s.id === store)!.name}<br />{STORES.find((s) => s.id === store)!.addr}</>
-              ) : (
-                <>{order.addr.firstname} {order.addr.lastname}<br />{order.addr.address1}{order.addr.address2 && `, ${order.addr.address2}`}<br />{order.addr.city}, {order.addr.state} {order.addr.postalcode}</>
-              )}
+              <>{order.addr.firstname} {order.addr.lastname}<br />{order.addr.address1}{order.addr.address2 && `, ${order.addr.address2}`}<br />{order.addr.city}, {order.addr.state} {order.addr.postalcode}</>
               <br />+91 {order.addr.phone}
             </p>
           </div>
           <div className="bg-cream p-5">
             <p className="text-[12px] uppercase tracking-[0.12em] text-ink/60">Payment</p>
             <p className="mt-2 text-[14px] text-ink">Cash on Delivery</p>
-            <p className="mt-1 text-[13px] text-ink/70">Please keep {inr(order.totals.total)} ready {order.pickup ? 'at pickup' : 'at delivery'}.</p>
+            <p className="mt-1 text-[13px] text-ink/70">Please keep {inr(order.totals.total)} ready at delivery.</p>
           </div>
         </div>
         <ul className="mt-[3px] flex flex-col gap-[3px] text-left">
@@ -417,7 +388,7 @@ export default function CheckoutPage() {
             <div id="step-1" className="scroll-mt-24">
               <Step
                 n={1}
-                title={pickup ? 'Pickup Details' : 'Shipping Address'}
+                title="Shipping Address"
                 active={step === 1}
                 done={maxStep > 1}
                 onEdit={() => setStep(1)}
@@ -425,33 +396,11 @@ export default function CheckoutPage() {
                   <>
                     {addr.firstname} {addr.lastname} · {addr.email} · +91 {addr.phone}
                     <br />
-                    {pickup ? STORES.find((s) => s.id === store)!.name : `${addr.address1}${addr.address2 ? ', ' + addr.address2 : ''}, ${addr.city}, ${addr.state} ${addr.postalcode}`}
+                    {`${addr.address1}${addr.address2 ? ', ' + addr.address2 : ''}, ${addr.city}, ${addr.state} ${addr.postalcode}`}
                   </>
                 }
               >
                 <form noValidate onSubmit={submitAddress}>
-                  <div className="flex flex-col gap-2">
-                    {[
-                      { v: false, t: 'At home delivery', d: 'Delivery at home or a desired address.' },
-                      { v: true, t: 'Pick up in store', d: 'Collect your order from an indē wild store. Free.' },
-                    ].map((o) => (
-                      <button
-                        type="button"
-                        key={o.t}
-                        onClick={() => { setPickup(o.v); if (tried) setErrors(validate(addr, o.v)) }}
-                        className={`flex gap-3 border bg-transparent px-4 py-5 text-left transition-colors ${pickup === o.v ? 'border-ink' : 'border-ink/30 hover:border-ink/60'}`}
-                      >
-                        <Radio checked={pickup === o.v} />
-                        <span>
-                          <span className="block text-[14px] font-medium text-ink">{o.t}</span>
-                          <span className="mt-1.5 block text-[14px] text-ink/75">
-                            {o.d} {!o.v && <>Required fields are marked with an (*).</>}
-                          </span>
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-
                   <div className="mt-6 grid gap-4 sm:grid-cols-2">
                     <Field label="First name" required value={addr.firstname} onChange={set('firstname')} error={errors.firstname} autoComplete="given-name" />
                     <Field label="Last name" required value={addr.lastname} onChange={set('lastname')} error={errors.lastname} autoComplete="family-name" />
@@ -459,31 +408,16 @@ export default function CheckoutPage() {
                     <Field label="Phone number" type="tel" inputMode="tel" maxLength={10} required value={addr.phone} onChange={(v) => set('phone')(v.replace(/\D/g, ''))} error={errors.phone} autoComplete="tel-national" />
                   </div>
 
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 bg-green-soft/60 px-4 py-3 text-[13px] text-ink">
-                    <span>Already a Member? Sign in to get free shipping and returns.</span>
-                    <button type="button" className="font-medium underline underline-offset-4">Sign in</button>
+                  <div className="mt-6 flex items-center gap-3 border-b border-ink/10 pb-3">
+                    <span className="text-[14px] font-medium tracking-wide text-ink">
+                      Delivery Address
+                    </span>
+                    <span className="text-[12px] text-ink/50">
+                      Where should we deliver your order?
+                    </span>
                   </div>
 
-                  {pickup ? (
-                    <div className="mt-6 flex flex-col gap-2">
-                      <p className="text-[14px] font-medium text-ink">Choose a store</p>
-                      {STORES.map((s) => (
-                        <button
-                          type="button"
-                          key={s.id}
-                          onClick={() => setStore(s.id)}
-                          className={`flex gap-3 border px-4 py-4 text-left transition-colors ${store === s.id ? 'border-ink' : 'border-ink/30 hover:border-ink/60'}`}
-                        >
-                          <Radio checked={store === s.id} />
-                          <span className="text-[14px] text-ink">
-                            <span className="block font-medium">{s.name}</span>
-                            <span className="mt-1 block text-ink/70">{s.addr} · {s.hours}</span>
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
                       <div className="sm:col-span-2">
                         <Field label="Street address" required value={addr.address1} onChange={set('address1')} onClear={() => set('address1')('')} error={errors.address1} autoComplete="address-line1" />
                       </div>
@@ -518,19 +452,7 @@ export default function CheckoutPage() {
                       <div className="sm:col-span-2">
                         <Field label="Address Nickname (Optional)" value={addr.nickname} onChange={set('nickname')} />
                       </div>
-                      <div className="flex flex-col gap-3 sm:col-span-2">
-                        {[
-                          { l: 'Save this address to my account', v: save, s: setSave },
-                          { l: 'Make this my default address', v: makeDefault, s: setMakeDefault },
-                        ].map((c) => (
-                          <label key={c.l} className="flex cursor-pointer items-center gap-3 text-[14px] text-ink">
-                            <input type="checkbox" checked={c.v} onChange={(e) => c.s(e.target.checked)} className="size-4 accent-[#24382d]" />
-                            {c.l}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  </div>
 
                   <button type="submit" className="mt-6 h-12 w-full bg-ink text-[14px] font-medium text-white transition-colors hover:bg-green-dark sm:w-[240px]">
                     Continue
@@ -546,8 +468,8 @@ export default function CheckoutPage() {
                 title="Shipping Method"
                 active={step === 2}
                 done={maxStep > 2}
-                onEdit={() => (pickup ? setStep(1) : setStep(2))}
-                summary={pickup ? 'Store pickup — Free' : `${m.label} · ${m.note} · ${totals.shipDiscount ? 'Free' : inr(m.price)}`}
+                onEdit={() => setStep(2)}
+                summary={`${m.label} · ${m.note} · ${totals.shipDiscount ? 'Free' : inr(m.price)}`}
               >
                 <div className="flex flex-col gap-2">
                   {METHODS.map((o) => {
@@ -592,7 +514,7 @@ export default function CheckoutPage() {
                       <Icon icon="solar:wad-of-money-linear" className="size-6 text-green" />
                     </span>
                     <span className="mt-1.5 block text-[14px] text-ink/75">
-                      Pay in cash or UPI when your order {pickup ? 'is collected' : 'arrives'}. No extra charges.
+                      Pay in cash or UPI when your order arrives. No extra charges.
                     </span>
                   </span>
                 </div>
@@ -618,14 +540,6 @@ export default function CheckoutPage() {
           <aside className="hidden lg:block">
             <div className="lg:sticky lg:top-24">
               <Summary items={cart.items} count={cart.count} totals={totals} editable {...summaryProps} />
-              <div className="px-5 pt-6">
-                <button
-                  onClick={() => { setPickup((v) => !v); setStep(1); go(1) }}
-                  className="h-11 w-full bg-ink text-[14px] font-medium text-white transition-colors hover:bg-green-dark"
-                >
-                  {pickup ? 'Deliver to my address instead' : 'Pick up in store instead'}
-                </button>
-              </div>
             </div>
           </aside>
         </div>
