@@ -20,7 +20,7 @@ globalWithMongoose.mongooseCache = cached
 
 export async function connectToDatabase() {
   if (cached.conn) return cached.conn
-  if (!cached.promise) cached.promise = mongoose.connect(getMongoUri())
+  if (!cached.promise) cached.promise = mongoose.connect(getMongoUri(), { dbName: 'ayurveda' })
   try {
     cached.conn = await cached.promise
   } catch (error) {
