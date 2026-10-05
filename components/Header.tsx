@@ -16,7 +16,7 @@ const announcements = [
   "Meet Your New Signature Scents: Solar Skin & After Heat",
 ]
 
-const topNav = ["YUBHI AYURVEDA", "HOME", "SHOP", "CONTACT"]
+const topNav = ["HOME", "SHOP","TRACK ORDER", "CONTACT"]
 
 export default function Header() {
   const router = useRouter()
@@ -61,7 +61,7 @@ export default function Header() {
                 {/* left nav */}
                 <nav className="hidden flex-1 items-center gap-6 lg:flex">
                   {topNav.map((n) => (
-                    <a key={n} href="#" onClick={(e) => { e.preventDefault(); setMenuOpen(false); router.push(n === "SHOP" ? "/shop" : n === "CONTACT" ? "/contact" : "/") }} className="text-[11px] font-medium uppercase tracking-[0.14em] text-ink hover:opacity-60">
+                    <a key={n} href="#" onClick={(e) => { e.preventDefault(); setMenuOpen(false); router.push(n === "SHOP" ? "/shop" :n === "TRACK ORDER" ? "/track" : n === "CONTACT" ? "/contact" : "/") }} className="text-[11px] font-medium uppercase tracking-[0.14em] text-ink hover:opacity-60">
                       {n}
                     </a>
                   ))}
@@ -125,7 +125,7 @@ export default function Header() {
                 <div className="border-t border-ink/10 bg-white lg:hidden">
                   <nav className="flex flex-col px-6 py-4">
                     {topNav.map((n) => (
-                      <a key={n} href="#" onClick={(e) => { e.preventDefault(); setMenuOpen(false); router.push(n === "SHOP" ? "/shop" : n === "CONTACT" ? "/contact" : "/") }} className="border-b border-ink/5 py-3 text-[12px] font-medium uppercase tracking-[0.14em]">
+                      <a key={n} href="#" onClick={(e) => { e.preventDefault(); setMenuOpen(false); router.push(n === "SHOP" ? "/shop" : n === "TRACK ORDER" ? "/track" : n === "CONTACT" ? "/contact" : "/") }} className="border-b border-ink/5 py-3 text-[12px] font-medium uppercase tracking-[0.14em]">
                         {n}
                       </a>
                     ))}

@@ -120,7 +120,7 @@ const commit = (next: State) => {
 }
 
 export function useStore() {
-  return useSyncExternalStore((f) => (subs.add(f), () => subs.delete(f)), () => state)
+  return useSyncExternalStore((f) => (subs.add(f), () => subs.delete(f)), () => state, () => state)
 }
 
 export const store = {

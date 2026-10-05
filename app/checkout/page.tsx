@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CartDrawer, { useCart, toNum, inr, type CartItem } from '@/components/CartDrawer'
+import { store } from '@/lib/store'
 
 const STATES = [
   'Andaman and Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chandigarh', 'Chhattisgarh',
@@ -300,7 +301,27 @@ export default function CheckoutPage() {
     if (!agree || placing) return
     setPlacing(true)
     setTimeout(() => {
+      const selectedMethod = METHODS.find((option) => option.id === method)!
       const snapshot = { id: 'IW' + Date.now().toString().slice(-8), items: cart.items, totals, addr, count: cart.count }
+      store.addOrder({
+        id: snapshot.id,
+        date: new Date().toISOString(),
+        customer: { name: `${addr.firstname} ${addr.lastname}`, email: addr.email, phone: addr.phone },
+        address: addr.address1,
+        city: addr.city,
+        state: addr.state,
+        pickup: false,
+        method: selectedMethod.label,
+        items: cart.items.map((item) => ({ title: item.title, img: item.img, price: toNum(item.price), qty: item.qty })),
+        subtotal: totals.subtotal,
+        discount: totals.discount,
+        shipping: totals.shipping - totals.shipDiscount,
+        total: totals.total,
+        code: applied,
+        payment: 'Cash on Delivery',
+        status: 'Pending',
+        notes: '',
+      })
       cart.items.forEach((i) => cart.remove(i.title))
       setOrder(snapshot)
       setPlacing(false)
