@@ -87,17 +87,30 @@ export default function ContactPage() {
     if (tried) setErrors(validate(next))
   }
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setTried(true)
     const errs = validate(form)
     setErrors(errs)
     if (Object.keys(errs).length) return document.getElementById(Object.keys(errs)[0])?.focus()
     setSending(true)
-    setTimeout(() => {
+    try {
+      const result = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, topic }),
+      })
+      if (!result.ok) {
+        const body = await result.json() as { error?: string }
+        throw new Error(body.error || `Unable to send message (${result.status})`)
+      }
       setSending(false)
       setSent(true)
-    }, 900)
+    } catch (error) {
+      setSending(false)
+      console.error('Unable to save contact message', error)
+      window.alert('We could not send your message. Please try again.')
+    }
   }
 
   return (

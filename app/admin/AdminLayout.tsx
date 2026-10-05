@@ -4,7 +4,9 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Icon } from '@iconify/react'
 import { useRouter } from 'next/navigation'
 import { auth, ADMIN_EMAIL } from '@/lib/auth'
-import { store, useStore, type Order, type Message } from '@/lib/store'
+import { useQuery } from '@tanstack/react-query'
+import { fetchMessages, messagesQueryKey } from '@/lib/messages-client'
+import { useStore, type Order } from '@/lib/store'
 import { type Tab, type Range, OrderDrawer, TAB_PATH } from './ui'
 
 const NAV: { id: Tab; label: string; icon: string }[] = [
@@ -13,7 +15,7 @@ const NAV: { id: Tab; label: string; icon: string }[] = [
   { id: 'messages', label: 'Messages', icon: 'solar:chat-round-line-linear' },
 ]
 
-type Ctx = { orders: Order[]; messages: Message[]; range: Range; query: string; openOrder: (o: Order) => void }
+type Ctx = { orders: Order[]; messages: Awaited<ReturnType<typeof fetchMessages>>; range: Range; query: string; openOrder: (o: Order) => void }
 
 export default function AdminLayout({ tab, children }: { tab: Tab; children: (ctx: Ctx) => ReactNode }) {
   const router = useRouter()
@@ -26,7 +28,13 @@ export default function AdminLayout({ tab, children }: { tab: Tab; children: (ct
 
 function Dashboard({ tab, children }: { tab: Tab; children: (ctx: Ctx) => ReactNode }) {
   const router = useRouter()
-  const { orders, messages } = useStore()
+  const { orders } = useStore()
+  const messagesQuery = useQuery({
+    queryKey: messagesQueryKey,
+    queryFn: fetchMessages,
+    staleTime: 60_000,
+  })
+  const messages = messagesQuery.data ?? []
   const [range, setRange] = useState<Range>(30)
   const [query, setQuery] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
@@ -116,4 +124,3 @@ function Dashboard({ tab, children }: { tab: Tab; children: (ctx: Ctx) => ReactN
     </div>
   )
 }
-

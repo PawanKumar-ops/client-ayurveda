@@ -2,17 +2,34 @@
 
 import { useState } from 'react'
 import { Icon } from '@iconify/react'
-import { store, type Message } from '@/lib/store'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { deleteMessage, messagesQueryKey, updateMessage } from '@/lib/messages-client'
+import type { MessageRecord } from '@/lib/message-model'
 import { fmtDate, fmtTime, ago, initials, Empty } from '../ui'
 import AdminLayout from '../AdminLayout'
 
-function MessagesView({ messages, query }: { messages: Message[]; query: string }) {
+function MessagesView({ messages, query }: { messages: MessageRecord[]; query: string }) {
   const [box, setBox] = useState<'inbox' | 'unread' | 'starred' | 'archived'>('inbox')
   const [activeId, setActiveId] = useState<string | null>(null)
   const [reply, setReply] = useState('')
+  const queryClient = useQueryClient()
+  const messageMutation = useMutation({
+    mutationFn: ({ id, patch }: { id: string; patch: Partial<MessageRecord> }) => updateMessage(id, patch),
+    onSuccess: (updated) => {
+      queryClient.setQueryData<MessageRecord[]>(messagesQueryKey, (current) => current?.map((m) => m.id === updated.id ? updated : m) ?? [updated])
+    },
+    onError: (error) => console.error('Unable to update admin message', error),
+  })
+  const deleteMutation = useMutation({
+    mutationFn: deleteMessage,
+    onSuccess: ({ id }) => {
+      queryClient.setQueryData<MessageRecord[]>(messagesQueryKey, (current) => current?.filter((m) => m.id !== id) ?? [])
+    },
+    onError: (error) => console.error('Unable to delete admin message', error),
+  })
   const list = messages.filter((m) => {
     const q = query.toLowerCase()
-    if (q && !`${m.name} ${m.email} ${m.topic} ${m.message}`.toLowerCase().includes(q)) return false
+    if (q && !`${m.name} ${m.email} ${m.phone} ${m.topic} ${m.message}`.toLowerCase().includes(q)) return false
     if (box === 'archived') return m.archived
     if (m.archived) return false
     if (box === 'unread') return !m.read
@@ -20,7 +37,7 @@ function MessagesView({ messages, query }: { messages: Message[]; query: string 
     return true
   })
   const active = messages.find((m) => m.id === activeId) ?? null
-  const open = (m: Message) => { setActiveId(m.id); setReply(''); if (!m.read) store.updateMessage(m.id, { read: true }) }
+  const open = (m: MessageRecord) => { setActiveId(m.id); setReply(''); if (!m.read) messageMutation.mutate({ id: m.id, patch: { read: true } }) }
   const boxes = [
     { id: 'inbox', label: 'Inbox', icon: 'solar:inbox-linear', n: messages.filter((m) => !m.archived).length },
     { id: 'unread', label: 'Unread', icon: 'solar:letter-unread-linear', n: messages.filter((m) => !m.read && !m.archived).length },
@@ -89,10 +106,10 @@ function MessagesView({ messages, query }: { messages: Message[]; query: string 
                 <button disabled={idx < 0 || idx >= list.length - 1} onClick={() => open(list[idx + 1])} aria-label="Next" className="hidden size-9 place-items-center rounded-full text-ink/70 hover:bg-cream disabled:opacity-30 lg:grid"><Icon icon="solar:alt-arrow-down-linear" className="size-[18px]" /></button>
                 <div className="ml-auto flex gap-1">
                   {[
-                    { i: active.starred ? 'solar:star-bold' : 'solar:star-linear', l: 'Star', f: () => store.updateMessage(active.id, { starred: !active.starred }) },
-                    { i: 'solar:letter-unread-linear', l: 'Mark unread', f: () => { store.updateMessage(active.id, { read: false }); setActiveId(null) } },
-                    { i: active.archived ? 'solar:inbox-out-linear' : 'solar:archive-linear', l: active.archived ? 'Unarchive' : 'Archive', f: () => { store.updateMessage(active.id, { archived: !active.archived }); setActiveId(null) } },
-                    { i: 'solar:trash-bin-trash-linear', l: 'Delete', f: () => { if (confirm('Delete this message?')) { store.deleteMessage(active.id); setActiveId(null) } } },
+                    { i: active.starred ? 'solar:star-bold' : 'solar:star-linear', l: 'Star', f: () => messageMutation.mutate({ id: active.id, patch: { starred: !active.starred } }) },
+                    { i: 'solar:letter-unread-linear', l: 'Mark unread', f: () => { messageMutation.mutate({ id: active.id, patch: { read: false } }); setActiveId(null) } },
+                    { i: active.archived ? 'solar:inbox-out-linear' : 'solar:archive-linear', l: active.archived ? 'Unarchive' : 'Archive', f: () => { messageMutation.mutate({ id: active.id, patch: { archived: !active.archived } }); setActiveId(null) } },
+                    { i: 'solar:trash-bin-trash-linear', l: 'Delete', f: () => { if (confirm('Delete this message?')) { deleteMutation.mutate(active.id); setActiveId(null) } } },
                   ].map((b) => (
                     <button key={b.l} title={b.l} aria-label={b.l} onClick={b.f} className={`grid size-9 place-items-center rounded-full hover:bg-cream ${b.l === 'Star' && active.starred ? 'text-accent' : b.l === 'Delete' ? 'text-[#9b3a2e]/80' : 'text-ink/70'}`}>
                       <Icon icon={b.i} className="size-[18px]" />
@@ -109,6 +126,7 @@ function MessagesView({ messages, query }: { messages: Message[]; query: string 
                   <div className="min-w-0 flex-1">
                     <p className="text-[14px] font-medium text-ink">{active.name}</p>
                     <p className="truncate text-[12px] text-ink/55">{active.email}</p>
+                    <p className="text-[12px] text-ink/55">{active.phone ? `+91 ${active.phone}` : 'No phone number provided'}</p>
                   </div>
                   <div className="flex gap-1.5">
                     <a href={`mailto:${active.email}`} className="flex h-8 items-center gap-1.5 rounded-full border border-ink/12 px-3 text-[12px] text-ink hover:border-ink"><Icon icon="solar:letter-linear" className="size-4" />Email</a>
