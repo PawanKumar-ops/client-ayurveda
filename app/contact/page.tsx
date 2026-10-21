@@ -78,7 +78,7 @@ export default function ContactPage() {
   const [faq, setFaq] = useState<number | null>(0)
 
   useEffect(() => {
-    document.title = 'Contact — indē wild'
+    document.title = 'Contact — yubhi ayurveda'
   }, [])
 
   const set = (k: keyof Form) => (v: string) => {
