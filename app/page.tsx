@@ -5,7 +5,8 @@ import { Icon } from '@iconify/react'
 import Footer from '@/components/Footer'
 import Header from '@/components/Header'
 import ProductCard from '@/components/ProductCard'
-import { bestSellers, perfumeMists, moodProducts } from '@/lib/products'
+// import { bestSellers, perfumeMists, moodProducts } from '@/lib/products'
+import { allProducts } from '@/lib/products'
 
 const img = {
   // HERO
@@ -414,7 +415,7 @@ export default function App() {
           </a>
         </div>
         <Carousel>
-          {bestSellers.map((p) => (
+          {allProducts.map((p) => (
             <div key={p.title} className="w-[70%] shrink-0 sm:w-[45%] md:w-[30%] lg:w-[23%]">
               <ProductCard p={p} />
             </div>
@@ -504,7 +505,7 @@ export default function App() {
         <div className="flex flex-col justify-center gap-6 px-6 py-14 md:px-14">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink/60">Shop The Perfume Mists</p>
           <div className="grid grid-cols-2 gap-5">
-            {perfumeMists.map((p) => (
+            {allProducts.map((p) => (
               <ProductCard key={p.title} p={{ ...p, newBadge: true, freeGift: true }} />
             ))}
           </div>
@@ -614,7 +615,7 @@ export default function App() {
                 Discover your scent
               </span>
             </a>
-            {moodProducts.map((p) => (
+            {allProducts.map((p) => (
               <ProductCard key={p.title} p={p} />
             ))}
           </div>

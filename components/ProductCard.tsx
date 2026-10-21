@@ -1,23 +1,34 @@
+
 "use client"
 
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/components/CartDrawer'
-import { slugify, type Product } from '@/lib/products'
-
-function Stars({ value = '4.9' }: { value?: string }) {
-  return (
-    <span className="inline-flex items-center gap-1 text-[11px] text-ink/70">
-      <span className="tracking-[-1px] text-[#e7c200]">★★★★★</span>
-      <span>{value}</span>
-    </span>
-  )
-}
+import { type Product } from '@/lib/products'
 
 export default function ProductCard({ p }: { p: Product }) {
   const router = useRouter()
   const { add } = useCart()
-  const href = `/product?slug=${slugify(p.title)}`
-  const open = (e: React.MouseEvent) => { e.preventDefault(); router.push(href) }
+
+  // Use the explicit slug so product URLs remain consistent.
+  const href = `/product?slug=${p.slug}`
+
+  const open = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    router.push(href)
+  }
+
+  const addToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    add({
+      title: p.title,
+      price: p.price,
+      old: p.old,
+      img: p.img,
+    })
+  }
+
   return (
     <div className="group flex w-full flex-col">
       <div className="relative overflow-hidden rounded-2xl bg-cream-soft">
@@ -27,48 +38,68 @@ export default function ProductCard({ p }: { p: Product }) {
               New
             </span>
           )}
+
           {p.off && (
             <span className="rounded-full bg-green-soft px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-green-dark">
               {p.off}
             </span>
           )}
+
           {p.freeGift && (
             <span className="rounded-full bg-white/90 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-ink">
               Free Gift
             </span>
           )}
         </div>
+
         <a href={href} onClick={open} aria-label={p.title}>
-        <img
-          src={p.img}
-          alt={p.title}
-          loading="lazy"
-          className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-        />
+          <img
+            src={p.img}
+            alt={p.title}
+            loading="lazy"
+            className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+          />
         </a>
+
         <div className="pointer-events-none absolute inset-x-3 bottom-3 hidden translate-y-3 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 md:block">
           <button
-            onClick={() => add({ title: p.title, price: p.price, old: p.old, img: p.img })}
+            onClick={addToCart}
             className="pointer-events-auto w-full rounded-full bg-ink py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-white"
           >
             Add to cart
           </button>
         </div>
       </div>
+
       <div className="mt-3 flex flex-col">
-        <h3 className="text-[15px] font-medium leading-snug text-ink"><a href={href} onClick={open} className="hover:text-green">{p.title}</a></h3>
-        <p className="mt-1 text-[12px] leading-snug text-ink/55">{p.desc}</p>
-        {p.rating && (
-          <div className="mt-1.5">
-            <Stars value={p.rating} />
-          </div>
-        )}
+        <h3 className="text-[15px] font-medium leading-snug text-ink">
+          <a
+            href={href}
+            onClick={open}
+            className="hover:text-green"
+          >
+            {p.title}
+          </a>
+        </h3>
+
+        <p className="mt-1 text-[12px] leading-snug text-ink/55">
+          {p.desc}
+        </p>
+
         <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-[15px] font-medium text-ink">{p.price}</span>
-          {p.old && <span className="text-[12px] text-ink/40 line-through">{p.old}</span>}
+          <span className="text-[15px] font-medium text-ink">
+            {p.price}
+          </span>
+
+          {p.old && (
+            <span className="text-[12px] text-ink/40 line-through">
+              {p.old}
+            </span>
+          )}
         </div>
+
         <button
-          onClick={() => add({ title: p.title, price: p.price, old: p.old, img: p.img })}
+          onClick={addToCart}
           className="mt-3 w-full rounded-full bg-ink py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-white md:hidden"
         >
           Add to cart

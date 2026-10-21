@@ -7,7 +7,13 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CartDrawer, { useCart } from '@/components/CartDrawer'
 import ProductCard from '@/components/ProductCard'
-import { allProducts, findProduct, lifestyleShots, productDetails, slugify } from '@/lib/products'
+import {
+  allProducts,
+  findProduct,
+  lifestyleShots,
+  productDetails,
+  slugify,
+} from '@/lib/products'
 
 const toNum = (s: string) => Number(s.replace(/[^\d.]/g, '')) || 0
 const inr = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN')
@@ -17,7 +23,7 @@ function ProductDetail() {
   const searchParams = useSearchParams()
   const slug = searchParams.get('slug') || ''
   const link = (to: string) => (e: React.MouseEvent) => { e.preventDefault(); router.push(to) }
-  const p = findProduct(slug) || allProducts[0]
+  const p = findProduct(slug)
   const { add } = useCart()
   const [active, setActive] = useState(0)
   const [more, setMore] = useState(false)
@@ -42,9 +48,14 @@ function ProductDetail() {
   }
 
   const d = productDetails(p)
-  const images = [p.img, ...lifestyleShots.map((s) => s.img)]
+  const images = p.images?.length
+  ? p.images
+  : [p.img]
   const go = (dir: number) => setActive((a) => (a + dir + images.length) % images.length)
-  const save = p.old ? Math.round((1 - toNum(p.price) / toNum(p.old)) * 100) : 0
+  const save =
+  p.old && toNum(p.old) > toNum(p.price)
+    ? Math.round((1 - toNum(p.price) / toNum(p.old)) * 100)
+    : 0
   const recs = (() => {
     const seen = new Set<string>([p.title])
     const list: typeof allProducts = []
@@ -194,16 +205,24 @@ function ProductDetail() {
 
             <div className="mt-5 text-[15px] leading-[1.6] text-ink/80">
               {more ? (
-                <>
-                  <p>{d.about}</p>
-                  <ul className="mt-3 list-disc space-y-1 pl-5">
-                    {d.benefits.map((b) => <li key={b}>{b}</li>)}
-                  </ul>
-                  <p className="mt-3 text-[12px] text-ink/60">*Based on a clinical study conducted on 32 participants.</p>
-                </>
-              ) : (
-                <p>{d.about.slice(0, 200)}…</p>
-              )}
+  <>
+    <p>{d.about}</p>
+
+    {d.benefits.length > 0 && (
+      <ul className="mt-3 list-disc space-y-1 pl-5">
+        {d.benefits.map((b) => (
+          <li key={b}>{b}</li>
+        ))}
+      </ul>
+    )}
+  </>
+) : (
+  <p>
+    {d.about.length > 200
+      ? `${d.about.slice(0, 200)}…`
+      : d.about}
+  </p>
+)}
               <button onClick={() => setMore(!more)} className="mt-1 font-medium text-accent underline underline-offset-2">
                 {more ? 'Read Less' : 'Read More'}
               </button>
@@ -244,14 +263,6 @@ function ProductDetail() {
               </span>
             </label>
 
-            {/* offers */}
-            <h4 className="mt-6 flex items-center gap-2 text-[15px] font-semibold">
-              <Icon icon="solar:sale-bold" width="22" className="text-green" /> Available Offers
-            </h4>
-            <div className="mt-2 rounded-md border border-dashed border-accent/60 bg-cream-soft p-3">
-              <h6 className="text-[13px] font-semibold">Free Gift</h6>
-              <p className="text-[13px] text-ink/75">Free yubhi pouch on orders above ₹2,499</p>
-            </div>
 
             {/* you may also like */}
             {recs.length > 0 && (
@@ -286,37 +297,6 @@ function ProductDetail() {
               ))}
             </ul>
 
-            {/* clinical results */}
-            <h3 className="mt-8 text-[14px] font-semibold uppercase tracking-[0.1em]">Clinical Results</h3>
-            <div className="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-md border border-ink/10 bg-ink/10">
-              {d.clinical.map((c) => (
-                <div key={c.text} className="bg-white p-4">
-                  <p className="font-serif-display text-[30px] leading-none text-green">{c.stat} {c.unit && <span className="text-[14px] font-sans">{c.unit}</span>}</p>
-                  <p className="mt-2 text-[12px] leading-snug text-ink/75">{c.text}</p>
-                </div>
-              ))}
-            </div>
-            <p className="mt-2 text-[11px] text-ink/55">*Based on clinical study conducted on 32 participants. **Based on an in vitro instrumental test.</p>
-
-            {/* more info */}
-            <div className="mt-6 border-y border-ink/15">
-              <button onClick={() => setInfoOpen(!infoOpen)} className="flex w-full items-center justify-between py-4 text-[13px] font-semibold uppercase tracking-[0.1em]">
-                More Product Information <span className="text-lg">{infoOpen ? '−' : '+'}</span>
-              </button>
-              {infoOpen && (
-                <div className="pb-2">
-                  {d.info.map((it, i) => (
-                    <div key={it.q} className="border-t border-ink/10">
-                      <button onClick={() => setOpenInfo(openInfo === i ? null : i)} className="flex w-full items-center justify-between py-3 text-[14px] font-medium">
-                        {it.q}
-                        <Icon icon="solar:alt-arrow-down-linear" width="16" className={`transition-transform ${openInfo === i ? 'rotate-180' : ''}`} />
-                      </button>
-                      {openInfo === i && <p className="pb-3 text-[13px] leading-relaxed text-ink/75">{it.a}</p>}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
         </div>
 

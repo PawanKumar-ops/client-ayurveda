@@ -17,8 +17,7 @@ const STATES = [
 ]
 
 const METHODS = [
-  { id: 'standard', label: 'Standard', note: 'Delivered in 4–6 business days', price: 79 },
-  { id: 'express', label: 'Express', note: 'Delivered in 1–2 business days', price: 149 },
+  { id: 'standard', label: 'Standard', note: 'Delivered in 4–6 business days', price: 199 },
 ] as const
 
 const FREE_SHIPPING_AT = 999
