@@ -11,7 +11,7 @@ import { lifestyleShots } from '@/lib/products'
 const TOPICS = ['Order & delivery', 'Returns', 'Product advice', 'Wholesale', 'Press', 'Other']
 
 const CHANNELS = [
-  { icon: 'solar:letter-linear', label: 'Write to us', value: 'care@indewild.com', href: 'mailto:care@indewild.com', note: 'Replies within 24 hours' },
+  { icon: 'solar:letter-linear', label: 'Write to us', value: 'care@yubhiayurveda.com', href: 'mailto:care@indewild.com', note: 'Replies within 24 hours' },
   { icon: 'solar:phone-linear', label: 'Call us', value: '+91 80 4718 2200', href: 'tel:+918047182200', note: 'Mon – Sat, 10am – 7pm IST' },
   { icon: 'ic:baseline-whatsapp', label: 'WhatsApp', value: '+91 98450 12345', href: 'https://wa.me/919845012345', note: 'Quickest for order updates' },
 ]

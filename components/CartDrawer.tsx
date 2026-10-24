@@ -18,6 +18,7 @@ type CartCtx = {
 }
 
 const Ctx = createContext<CartCtx | null>(null)
+const CART_STORAGE_KEY = 'yubhi-cart'
 
 export const toNum = (s?: string) => Number((s ?? '').replace(/[^\d.]/g, '')) || 0
 export const inr = (n: number) => '₹' + n.toLocaleString('en-IN')
@@ -25,6 +26,45 @@ export const inr = (n: number) => '₹' + n.toLocaleString('en-IN')
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [open, setOpen] = useState(false)
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(CART_STORAGE_KEY)
+      if (stored) {
+        const parsed: unknown = JSON.parse(stored)
+        if (Array.isArray(parsed)) {
+          const savedItems = parsed.filter((item): item is CartItem => {
+            if (!item || typeof item !== 'object') return false
+            const candidate = item as Partial<CartItem>
+            return (
+              typeof candidate.title === 'string' &&
+              typeof candidate.price === 'string' &&
+              typeof candidate.img === 'string' &&
+              typeof candidate.qty === 'number' &&
+              Number.isInteger(candidate.qty) &&
+              candidate.qty > 0
+            )
+          })
+          setItems(savedItems)
+        }
+      }
+    } catch (error) {
+      console.error('Unable to restore cart from localStorage', error)
+    } finally {
+      setHydrated(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!hydrated) return
+
+    try {
+      window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items))
+    } catch (error) {
+      console.error('Unable to save cart to localStorage', error)
+    }
+  }, [hydrated, items])
 
   const add = (p: CartProduct) => {
     setItems((prev) => {
