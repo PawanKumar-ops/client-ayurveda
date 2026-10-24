@@ -88,7 +88,7 @@ function ProductDetail() {
     return list
   })()
   const addToCart = () => {
-    for (let i = 0; i < qty; i++) add({ title: p.title, price: p.price, old: p.old, img: p.img })
+    for (let i = 0; i < qty; i++) add({ title: p.title, price: p.price, old: p.old, img: p.img, category: p.category })
     if (gift) add({ title: 'Festive Giftbox', price: '₹299', img: allProducts[0].img })
   }
 
@@ -278,7 +278,7 @@ function ProductDetail() {
                           <span className="text-[12px]">{r.price} {r.old && <span className="text-ink/45 line-through">{r.old}</span>}</span>
                         </span>
                       </a>
-                      <button onClick={() => add({ title: r.title, price: r.price, old: r.old, img: r.img })} className="rounded-full border border-green px-3 py-1 text-[11px] font-semibold text-green hover:bg-green hover:text-white">
+                      <button onClick={() => add({ title: r.title, price: r.price, old: r.old, img: r.img, category: r.category })} className="rounded-full border border-green px-3 py-1 text-[11px] font-semibold text-green hover:bg-green hover:text-white">
                         Add
                       </button>
                     </div>

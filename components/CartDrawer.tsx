@@ -1,8 +1,9 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Icon } from '@iconify/react'
 import { useRouter } from 'next/navigation'
+import { allProducts, type Product } from '@/lib/products'
 
-export type CartProduct = { title: string; price: string; old?: string; img: string }
+export type CartProduct = { title: string; price: string; old?: string; img: string; category?: string }
 export type CartItem = CartProduct & { qty: number }
 
 type CartCtx = {
@@ -55,20 +56,7 @@ export function useCart() {
 }
 
 
-const CDN = 'https://cdn.shopify.com/s/files/1/0638/0634/1341/files/'
-
-type Suggestion = CartProduct & { desc: string }
-
-const suggestions: Suggestion[] = [
-  { title: 'After Heat Hair & Body Perfume Mist', desc: 'A warm, lingering scent for hair and skin', price: '₹1,299', img: CDN + 'afterheat_01.jpg' },
-  { title: 'AM+PM', desc: 'Your day-to-night hair ritual', price: '₹3,349', old: '₹3,940', img: CDN + 'AM_PM.jpg' },
-  { title: 'Chai on Call', desc: 'A cosy duo for lips and body', price: '₹1,230', old: '₹1,448', img: CDN + 'IMG_9691.jpg' },
-  { title: 'Champi Bond Repair Conditioner', desc: 'Softens and repairs damaged hair', price: '₹1,092', old: '₹1,150', img: CDN + 'conditioner_01_5085a0eb-f7ff-41ed-b646-f8cc0e3f2102.jpg' },
-  { title: 'Champi Bond Repair Duo', desc: 'Shampoo and conditioner for stronger hair', price: '₹1,955', old: '₹2,300', img: CDN + 'ChampiBondRepairDuo_01.jpg' },
-  { title: 'Champi Bond Repair Shampoo', desc: 'Gentle cleanse, rebuilt bonds', price: '₹1,092', old: '₹1,150', img: CDN + 'shampoo_01_73335608-8d40-4ffe-bb0d-6f9d39ce6324.jpg' },
-  { title: 'Champi Essentials Kit', desc: 'Everything for the perfect champi', price: '₹1,499', old: '₹1,899', img: CDN + 'champiessentials_01.jpg' },
-  { title: 'Champi Hair Oil', desc: 'Ayurvedic oil for scalp and roots', price: '₹355', img: CDN + 'Updated_1st_image_2.jpg' },
-]
+const MAX_SUGGESTIONS = 6
 
 function Stepper({ qty, onChange, title }: { qty: number; onChange: (n: number) => void; title: string }) {
   return (
@@ -88,7 +76,7 @@ function Stepper({ qty, onChange, title }: { qty: number; onChange: (n: number) 
   )
 }
 
-function SuggestionTile({ p }: { p: Suggestion }) {
+function SuggestionTile({ p }: { p: Product }) {
   const { add } = useCart()
 
   return (
@@ -154,7 +142,14 @@ export default function CartDrawer() {
   }, [open, setOpen])
 
   const inCart = new Set(items.map((i) => i.title))
-  const recs = suggestions.filter((p) => !inCart.has(p.title))
+  const cartCategories = new Set(
+    items
+      .map((i) => i.category ?? allProducts.find((p) => p.title === i.title)?.category)
+      .filter((category): category is string => Boolean(category)),
+  )
+  const recs = allProducts
+    .filter((p) => cartCategories.has(p.category) && !inCart.has(p.title))
+    .slice(0, MAX_SUGGESTIONS)
   const pages = Math.max(recs.length - 1, 1)
 
   const onScroll = () => {

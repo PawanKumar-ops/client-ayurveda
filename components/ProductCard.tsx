@@ -26,6 +26,7 @@ export default function ProductCard({ p }: { p: Product }) {
       price: p.price,
       old: p.old,
       img: p.img,
+      category: p.category,
     })
   }
 
