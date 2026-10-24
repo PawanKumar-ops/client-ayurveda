@@ -30,7 +30,7 @@ export default function ProductCard({ p }: { p: Product }) {
   }
 
   return (
-    <div className="group flex w-full flex-col">
+    <div className="group flex h-full w-full flex-col">
       <div className="relative overflow-hidden rounded-2xl bg-cream-soft">
         <div className="absolute left-3 top-3 z-10 flex flex-col gap-1.5">
           {p.newBadge && (
@@ -71,7 +71,7 @@ export default function ProductCard({ p }: { p: Product }) {
         </div>
       </div>
 
-      <div className="mt-3 flex flex-col">
+      <div className="mt-3 flex flex-1 flex-col">
         <h3 className="text-[15px] font-medium leading-snug text-ink">
           <a
             href={href}
@@ -82,9 +82,9 @@ export default function ProductCard({ p }: { p: Product }) {
           </a>
         </h3>
 
-        <p className="mt-1 text-[12px] leading-snug text-ink/55">
-          {p.desc}
-        </p>
+      <p className="mt-1 truncate text-[12px] leading-snug text-ink/55">
+  {p.desc}
+</p>
 
         <div className="mt-2 flex items-baseline gap-2">
           <span className="text-[15px] font-medium text-ink">
@@ -99,11 +99,11 @@ export default function ProductCard({ p }: { p: Product }) {
         </div>
 
         <button
-          onClick={addToCart}
-          className="mt-3 w-full rounded-full bg-ink py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-white md:hidden"
-        >
-          Add to cart
-        </button>
+  onClick={addToCart}
+  className="mt-auto w-full rounded-full bg-ink py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-white md:hidden"
+>
+  Add to cart
+</button>
       </div>
     </div>
   )

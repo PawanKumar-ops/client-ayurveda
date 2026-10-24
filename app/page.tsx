@@ -47,19 +47,19 @@ const img = {
 
   // GALLERY
   gallery1:
-    'https://india.indewild.com/cdn/shop/files/scentstories_01_364287d3-1757-4258-ac74-39a7a8ced82d.jpg?v=1787219732',
+    '3.jpeg',
 
   gallery2:
-    'https://india.indewild.com/cdn/shop/files/champiessentials_01.jpg?v=1787217578',
+    '23.jpeg',
 
   gallery3:
-    'https://india.indewild.com/cdn/shop/files/slickstick_01.jpg?v=1762254817',
+    '15.jpeg',
 
   gallery4:
-    'https://india.indewild.com/cdn/shop/files/130ml_mss_1_1.jpg?v=1777738270',
+    '13.jpeg',
 
   gallery5:
-    'https://india.indewild.com/cdn/shop/files/DLT_WR_1.jpg?v=1774435601',
+    '14.jpeg',
 
   // INGREDIENTS
   tangerine:
@@ -337,9 +337,9 @@ export default function App() {
   const [moodTab, setMoodTab] = useState<'HAIR CARE' | 'LIP CARE'>('HAIR CARE')
 
   const heroSlides = [
-  img.heroDesktop1,
-  img.heroDesktop2,
-]
+    img.heroDesktop1,
+    img.heroDesktop2,
+  ]
 
   return (
     <div className="min-h-screen bg-white text-ink">
@@ -415,8 +415,11 @@ export default function App() {
           </a>
         </div>
         <Carousel>
-          {allProducts.map((p) => (
-            <div key={p.title} className="w-[70%] shrink-0 sm:w-[45%] md:w-[30%] lg:w-[23%]">
+          {allProducts.slice(0, 15).map((p) => (
+            <div
+              key={p.title}
+              className="w-[70%] shrink-0 sm:w-[45%] md:w-[30%] lg:w-[23%]"
+            >
               <ProductCard p={p} />
             </div>
           ))}
@@ -505,7 +508,7 @@ export default function App() {
         <div className="flex flex-col justify-center gap-6 px-6 py-14 md:px-14">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink/60">Shop The Perfume Mists</p>
           <div className="grid grid-cols-2 gap-5">
-            {allProducts.map((p) => (
+            {allProducts.slice(0, 2).map((p) => (
               <ProductCard key={p.title} p={{ ...p, newBadge: true, freeGift: true }} />
             ))}
           </div>
@@ -615,7 +618,7 @@ export default function App() {
                 Discover your scent
               </span>
             </a>
-            {allProducts.map((p) => (
+            {allProducts.slice(0, 3).map((p) => (
               <ProductCard key={p.title} p={p} />
             ))}
           </div>
@@ -676,7 +679,7 @@ export default function App() {
       <FAQ />
 
       {/* footer */}
-      <Footer/>
+      <Footer />
     </div>
   )
 }
