@@ -383,7 +383,7 @@ export const allProducts: ShopProduct[] = [
   price: '₹',
   img: '66.jpeg',
   images: [
-    '66.jpeg','47.jpeg','63.jpeg','45.jpeg','48.jpeg'
+    '66.jpeg','47.jpeg','45.jpeg','48.jpeg'
   ],
   category: 'Hair Care',
 },
@@ -419,7 +419,7 @@ export const allProducts: ShopProduct[] = [
   price: '₹1999',
   img: '55.jpeg',
   images: [
-    '55.jpeg','54.jpeg','56.jpeg','57.jpeg','58.jpeg'
+    '55.jpeg'
   ],
   category: 'Health & Wellness',
 },
@@ -431,7 +431,7 @@ export const allProducts: ShopProduct[] = [
   price: '₹',
   img: '68.jpeg',
   images: [
-    '68.jpeg','65.jpeg'
+    '68.jpeg'
   ],
   category: 'Hair Care',
 },
@@ -441,9 +441,9 @@ export const allProducts: ShopProduct[] = [
   title: 'Yubhi Ayurveda 3-in-1 Golden Shampoo',
   desc: 'Yubhi Ayurveda 3-in-1 Golden Shampoo is a complete hair-care solution formulated to cleanse, smooth and enhance hair shine. Enriched with keratin, argan oil, biotin and Ayurvedic herbs including amla, reetha, shikakai and bhringraj, it helps manage frizz, improve hair texture and care for dull, damaged-looking hair. Suitable for all hair types, this 500 ml shampoo is designed for regular hair-care routines.',
   price: '₹',
-  img: '71.jpeg',
+  img: '67.jpeg',
   images: [
-    '71.jpeg','70.jpeg','69.jpeg','67.jpeg'
+    '67.jpeg'
   ],
   category: 'Hair Care',
 },
