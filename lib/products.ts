@@ -322,7 +322,7 @@ export const allProducts: ShopProduct[] = [
   desc: 'Collagen face serum formulated with Cica Exosomes, peptides and hyaluronic acid. Designed to support skin hydration, improve the appearance of skin texture and promote a radiant-looking complexion.',
   price: '₹',
   img: '30.jpeg',
-  images: ['30.jpeg','32.jpeg'],
+  images: ['30.jpeg'],
   category: 'Skin Care',
   size: '50ml',
 },
@@ -336,7 +336,7 @@ export const allProducts: ShopProduct[] = [
   desc: 'Face wash formulated with Acne Buster, salicylic acid, glycolic acid and vitamin E. Designed for acne-prone skin to cleanse pores and remove excess oil.',
   price: '₹',
   img: '33.jpeg',
-  images: ['33.jpeg','34.jpeg','36.jpeg'],
+  images: ['33.jpeg','34.jpeg'],
   category: 'Face Wash',
   size: '100 ml',
 },
@@ -369,9 +369,9 @@ export const allProducts: ShopProduct[] = [
   title: 'Yubhi Ayurveda Romashuddhi Powder',
   desc: 'Handcrafted Ayurvedic Romashuddhi Powder by Dr. Nisha Thakran. A traditional skincare product from Yubhi Ayurveda. Refer to the product packaging or consult the manufacturer for ingredients, directions for use and suitability.',
   price: '₹',
-  img: '46.jpeg',
+  img: '43.jpeg',
   images: [
-    '43.jpeg','46.jpeg'
+    '43.jpeg'
   ],
   category: 'Ayurvedic Skin Care',
 },
@@ -395,7 +395,7 @@ export const allProducts: ShopProduct[] = [
   price: '₹',
   img: '64.jpeg',
   images: [
-    '64.jpeg','61.jpeg','49.jpeg','52.jpeg','53.jpeg','59.jpeg'
+    '64.jpeg','53.jpeg'
   ],
   category: 'Ayurvedic Wellness',
 },
