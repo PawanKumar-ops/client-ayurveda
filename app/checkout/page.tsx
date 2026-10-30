@@ -22,10 +22,6 @@ const METHODS = [
 
 const FREE_SHIPPING_AT = 999
 const COD_FEE = 0
-const CODES: Record<string, { pct: number; label: string }> = {
-  WILD10: { pct: 10, label: '10% off' },
-  RITUAL15: { pct: 15, label: '15% off' },
-}
 
 type Addr = {
   firstname: string; lastname: string; email: string; phone: string
@@ -159,13 +155,12 @@ function LineItem({ i, editable }: { i: CartItem; editable: boolean }) {
   )
 }
 
-type Totals = { subtotal: number; shipping: number; shipLabel: string; discount: number; shipDiscount: number; total: number }
+type Totals = { subtotal: number; shipping: number; shipLabel: string; shipDiscount: number; total: number }
 
 function Summary({
-  items, count, totals, code, setCode, applied, applyCode, codeError, editable,
+  items, count, totals, editable,
 }: {
-  items: CartItem[]; count: number; totals: Totals; code: string; setCode: (v: string) => void
-  applied: string | null; applyCode: () => void; codeError: string; editable: boolean
+  items: CartItem[]; count: number; totals: Totals; editable: boolean
 }) {
   const [editing, setEditing] = useState(false)
   return (
@@ -182,36 +177,8 @@ function Summary({
         {items.map((i) => <LineItem key={i.title} i={i} editable={editable && editing} />)}
       </ul>
 
-      {editable && (
-        <div className="mt-[3px] bg-cream px-4 py-5">
-          <label htmlFor="promo" className="text-[13px] font-medium text-ink">Discount code</label>
-          <div className="mt-2 flex gap-2">
-            <input
-              id="promo"
-              value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-              onKeyDown={(e) => e.key === 'Enter' && applyCode()}
-              placeholder="e.g. WILD10"
-              className="h-11 min-w-0 flex-1 border border-ink/30 bg-white px-3 text-[14px] uppercase tracking-wide text-ink outline-none placeholder:normal-case placeholder:tracking-normal placeholder:text-ink/40 focus:border-ink"
-            />
-            <button onClick={applyCode} className="h-11 shrink-0 bg-ink px-5 text-[13px] text-white transition-colors hover:bg-green-dark">
-              Apply
-            </button>
-          </div>
-          {codeError && <p className="mt-1.5 text-[12px] text-[#b3261e]">{codeError}</p>}
-          {applied && !codeError && (
-            <p className="mt-1.5 flex items-center gap-1 text-[12px] text-green">
-              <Icon icon="solar:tag-price-linear" className="size-4" /> {applied} applied — {CODES[applied].label}
-            </p>
-          )}
-        </div>
-      )}
-
       <dl className="mt-[3px] space-y-3 bg-cream px-4 py-5 text-[14px] text-ink">
         <div className="flex justify-between"><dt>Subtotal</dt><dd className="tabular-nums">{inr(totals.subtotal)}</dd></div>
-        {totals.discount > 0 && (
-          <div className="flex justify-between text-green"><dt>Discount ({applied})</dt><dd className="tabular-nums">-{inr(totals.discount)}</dd></div>
-        )}
         <div className="flex justify-between">
           <dt>Estimated shipping<span className="mt-0.5 block text-[12px] text-ink/60">{totals.shipLabel}</span></dt>
           <dd className="tabular-nums">{inr(totals.shipping)}</dd>
@@ -239,9 +206,6 @@ export default function CheckoutPage() {
   const [save, setSave] = useState(true)
   const [makeDefault, setMakeDefault] = useState(false)
   const [method, setMethod] = useState<(typeof METHODS)[number]['id']>('standard')
-  const [code, setCode] = useState('')
-  const [applied, setApplied] = useState<string | null>(null)
-  const [codeError, setCodeError] = useState('')
   const [agree, setAgree] = useState(false)
   const [placing, setPlacing] = useState(false)
   const [order, setOrder] = useState<null | { id: string; items: CartItem[]; totals: Totals; addr: Addr; count: number }>(null)
@@ -259,24 +223,15 @@ export default function CheckoutPage() {
 
   const totals: Totals = useMemo(() => {
     const subtotal = cart.subtotal
-    const discount = applied ? Math.round((subtotal * CODES[applied].pct) / 100) : 0
     const m = METHODS.find((x) => x.id === method)!
     const shipping = m.price
-    const shipDiscount = method === 'standard' && subtotal - discount >= FREE_SHIPPING_AT ? shipping : 0
+    const shipDiscount = method === 'standard' && subtotal >= FREE_SHIPPING_AT ? shipping : 0
     return {
-      subtotal, discount, shipping, shipDiscount,
+      subtotal, shipping, shipDiscount,
       shipLabel: m.label,
-      total: Math.max(0, subtotal - discount + shipping - shipDiscount + COD_FEE),
+      total: Math.max(0, subtotal + shipping - shipDiscount + COD_FEE),
     }
-  }, [cart.subtotal, applied, method])
-
-  const applyCode = () => {
-    const c = code.trim()
-    if (!c) return setCodeError('Please enter a code')
-    if (!CODES[c]) return setCodeError('This code is invalid or has expired')
-    setCodeError('')
-    setApplied(c)
-  }
+  }, [cart.subtotal, method])
 
   const go = (n: number) => {
     setStep(n)
@@ -313,10 +268,10 @@ export default function CheckoutPage() {
         method: selectedMethod.label,
         items: cart.items.map((item) => ({ title: item.title, img: item.img, price: toNum(item.price), qty: item.qty })),
         subtotal: totals.subtotal,
-        discount: totals.discount,
+        discount: 0,
         shipping: totals.shipping - totals.shipDiscount,
         total: totals.total,
-        code: applied,
+        code: null,
         payment: 'Cash on Delivery',
         status: 'Pending',
         notes: '',
@@ -327,8 +282,6 @@ export default function CheckoutPage() {
       window.scrollTo({ top: 0 })
     }, 900)
   }
-
-  const summaryProps = { code, setCode, applied, applyCode, codeError }
 
   let body: ReactNode
   if (order) {
@@ -398,7 +351,7 @@ export default function CheckoutPage() {
         </button>
         {summaryOpen && (
           <div className="mt-[3px] lg:hidden">
-            <Summary items={cart.items} count={cart.count} totals={totals} editable {...summaryProps} />
+            <Summary items={cart.items} count={cart.count} totals={totals} editable />
           </div>
         )}
 
@@ -493,7 +446,7 @@ export default function CheckoutPage() {
               >
                 <div className="flex flex-col gap-2">
                   {METHODS.map((o) => {
-                    const free = o.id === 'standard' && totals.subtotal - totals.discount >= FREE_SHIPPING_AT
+                    const free = o.id === 'standard' && totals.subtotal >= FREE_SHIPPING_AT
                     return (
                       <button
                         key={o.id}
@@ -511,9 +464,9 @@ export default function CheckoutPage() {
                       </button>
                     )
                   })}
-                  {totals.subtotal - totals.discount < FREE_SHIPPING_AT && (
+                  {totals.subtotal < FREE_SHIPPING_AT && (
                     <p className="text-[13px] text-ink/70">
-                      Add {inr(FREE_SHIPPING_AT - (totals.subtotal - totals.discount))} more for free standard shipping.
+                      Add {inr(FREE_SHIPPING_AT - totals.subtotal)} more for free standard shipping.
                     </p>
                   )}
                 </div>
@@ -559,7 +512,7 @@ export default function CheckoutPage() {
 
           <aside className="hidden lg:block">
             <div className="lg:sticky lg:top-24">
-              <Summary items={cart.items} count={cart.count} totals={totals} editable {...summaryProps} />
+              <Summary items={cart.items} count={cart.count} totals={totals} editable />
             </div>
           </aside>
         </div>
