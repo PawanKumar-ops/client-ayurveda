@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Icon } from '@iconify/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Header from '@/components/Header'
@@ -26,11 +26,18 @@ function ShopContent() {
   const searchParams = useSearchParams()
   const [cat, setCat] = useState('All')
   const [sort, setSort] = useState<(typeof sorts)[number]>('Featured')
-  const [page, setPage] = useState(1)
   const q = searchParams.get('q')?.trim() ?? ''
+  const pageParam = Number(searchParams.get('page'))
+  const page = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1
+  const previousQ = useRef(q)
   useEffect(() => {
-    setPage(1)
-  }, [q])
+    if (previousQ.current === q) return
+    previousQ.current = q
+    if (!searchParams.has('page')) return
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('page')
+    router.replace(params.toString() ? `/shop?${params.toString()}` : '/shop', { scroll: false })
+  }, [q, router, searchParams])
 
   const cats = ['All', ...Array.from(new Set(products.map((p) => p.category)))]
 
@@ -48,9 +55,14 @@ function ShopContent() {
   const pages = Math.max(1, Math.ceil(list.length / PER_PAGE))
   const cur = Math.min(page, pages)
   const shown = list.slice((cur - 1) * PER_PAGE, cur * PER_PAGE)
+  const shopUrl = searchParams.toString() ? `/shop?${searchParams.toString()}` : '/shop'
 
   const goTo = (n: number) => {
-    setPage(n)
+    const nextPage = Math.max(1, Math.min(n, pages))
+    const params = new URLSearchParams(searchParams.toString())
+    if (nextPage === 1) params.delete('page')
+    else params.set('page', String(nextPage))
+    router.replace(params.toString() ? `/shop?${params.toString()}` : '/shop', { scroll: false })
     document.getElementById('shop-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
@@ -70,7 +82,10 @@ function ShopContent() {
             {cats.map((c) => (
               <button
                 key={c}
-                onClick={() => { setCat(c); setPage(1) }}
+                onClick={() => {
+                  setCat(c)
+                  goTo(1)
+                }}
                 className={`shrink-0 rounded-full border px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] transition-colors ${
                   cat === c ? 'border-ink bg-ink text-white' : 'border-ink/20 text-ink hover:border-ink'
                 }`}
@@ -85,7 +100,10 @@ function ShopContent() {
               <span className="sr-only">Sort by</span>
               <select
                 value={sort}
-                onChange={(e) => { setSort(e.target.value as typeof sort); setPage(1) }}
+                onChange={(e) => {
+                  setSort(e.target.value as typeof sort)
+                  goTo(1)
+                }}
                 className="appearance-none rounded-full border border-ink/20 bg-white py-2 pl-4 pr-9 text-[12px] font-medium text-ink outline-none focus:border-ink"
               >
                 {sorts.map((s) => <option key={s}>{s}</option>)}
@@ -102,7 +120,7 @@ function ShopContent() {
         >
           {shown.map((p) => (
             <div key={p.title} className="min-w-0">
-              <ProductCard p={p} />
+              <ProductCard p={p} returnTo={shopUrl} />
             </div>
           ))}
         </div>

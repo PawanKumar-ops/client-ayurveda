@@ -22,6 +22,7 @@ function ProductDetail() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const slug = searchParams.get('slug') || ''
+  const returnTo = searchParams.get('from')?.startsWith('/shop') ? searchParams.get('from')! : '/shop'
   const link = (to: string) => (e: React.MouseEvent) => { e.preventDefault(); router.push(to) }
   const p = findProduct(slug)
   const { add } = useCart()
@@ -39,7 +40,7 @@ function ProductDetail() {
         <Header />
         <main className="px-4 py-32 text-center">
           <h1 className="font-serif-display text-4xl font-light">Product not found</h1>
-          <a href="/shop" onClick={link('/shop')} className="mt-6 inline-block text-[13px] font-medium text-accent underline underline-offset-4">Back to all products</a>
+          <a href={returnTo} onClick={link(returnTo)} className="mt-6 inline-block text-[13px] font-medium text-accent underline underline-offset-4">Back to all products</a>
         </main>
         <Footer />
         <CartDrawer />
@@ -98,7 +99,7 @@ function ProductDetail() {
       <main className="mx-auto max-w-[1400px] px-4 pb-16 pt-4 md:px-14">
         {/* breadcrumb */}
         <nav className="flex items-center gap-2 text-[13px] text-ink/80">
-          <a href="/shop" onClick={link('/shop')} className="hover:text-accent">All Products</a>
+          <a href={returnTo} onClick={link(returnTo)} className="hover:text-accent">All Products</a>
           <span className="h-1 w-1 rounded-full bg-ink/40" />
           <span>{p.category}</span>
         </nav>

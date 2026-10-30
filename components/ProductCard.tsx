@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation'
 import { useCart } from '@/components/CartDrawer'
 import { type Product } from '@/lib/products'
 
-export default function ProductCard({ p }: { p: Product }) {
+export default function ProductCard({ p, returnTo }: { p: Product; returnTo?: string }) {
   const router = useRouter()
   const { add } = useCart()
 
   // Use the explicit slug so product URLs remain consistent.
-  const href = `/product?slug=${p.slug}`
+  const href = `/product?slug=${encodeURIComponent(p.slug)}${returnTo ? `&from=${encodeURIComponent(returnTo)}` : ''}`
 
   const open = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault()
