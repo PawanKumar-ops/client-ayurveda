@@ -2,10 +2,11 @@ import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { ADMIN_EMAIL } from '@/lib/admin-email'
 import { verifyAdmin } from '@/lib/admin-model'
+import { AUTH_SECRET } from '@/lib/auth-secret'
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt' },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: AUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: 'Admin',
