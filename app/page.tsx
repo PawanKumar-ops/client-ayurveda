@@ -271,7 +271,7 @@ function FAQ() {
           </p>
 
           <div>
-            <YellowButton>Contact Us</YellowButton>
+            <a href="/contact"><YellowButton>Contact Us</YellowButton></a>
           </div>
         </div>
 
@@ -408,7 +408,7 @@ export default function App() {
         <div className="mb-8 flex flex-col items-center gap-4 text-center">
           <h2 className="font-serif-display text-3xl font-light md:text-[40px]">Shop Best-Sellers</h2>
           <a
-            href="#"
+            href="/shop"
             className="rounded-full border border-ink/25 px-6 py-2 text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-green hover:text-white hover:border-green"
           >
             View All
@@ -443,7 +443,7 @@ export default function App() {
             routine.
           </p>
           <div>
-            <YellowButton>Shop All Products</YellowButton>
+            <a href="/shop"><YellowButton>Shop All Products</YellowButton></a>
           </div>
         </div>
       </section>
