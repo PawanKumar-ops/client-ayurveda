@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Icon } from '@iconify/react'
-import { store, type Order } from '@/lib/store'
+import type { Order } from '@/lib/order-types'
+import { cancelTrackedOrder } from '@/lib/orders-client'
 
 const inr = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN')
 
@@ -13,15 +14,19 @@ const REASONS = [
   { r: 'Other', i: 'solar:menu-dots-linear' },
 ]
 
-export default function CancelOrderModal({ order: o, open, onClose }: { order: Order; open: boolean; onClose: () => void }) {
+export default function CancelOrderModal({ order: o, contact, open, onClose, onCancelled }: {
+  order: Order; contact: string; open: boolean; onClose: () => void; onCancelled: (o: Order) => void
+}) {
   const [reason, setReason] = useState('')
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!open) return
     setReason('')
     setNote('')
+    setError('')
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
@@ -33,14 +38,18 @@ export default function CancelOrderModal({ order: o, open, onClose }: { order: O
 
   const count = o.items.reduce((a, i) => a + i.qty, 0)
   const valid = reason && (reason !== 'Other' || note.trim().length > 2)
-  const confirmCancel = () => {
+  const confirmCancel = async () => {
     setBusy(true)
-    setTimeout(() => {
-      const why = reason === 'Other' ? note.trim() : reason + (note.trim() ? ` (${note.trim()})` : '')
-      store.updateOrder(o.id, { status: 'Cancelled', notes: (o.notes ? o.notes + '\n' : '') + `Cancelled by customer via order tracking — ${why}.` })
-      setBusy(false)
+    setError('')
+    const why = reason === 'Other' ? note.trim() : reason + (note.trim() ? ` (${note.trim()})` : '')
+    try {
+      onCancelled(await cancelTrackedOrder(o.id, contact, why))
       onClose()
-    }, 600)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not cancel the order.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return createPortal(
@@ -101,6 +110,7 @@ export default function CancelOrderModal({ order: o, open, onClose }: { order: O
         </div>
 
         {/* footer */}
+        {error && <p role="alert" className="mx-6 mb-2 rounded-xl bg-[#f5e1de] px-3.5 py-2.5 text-[13px] text-[#9b3a2e] sm:mx-8">{error}</p>}
         <div className="grid grid-cols-2 gap-2.5 border-t border-ink/8 px-6 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:px-8 sm:pb-6">
           <button onClick={onClose} disabled={busy} className="h-12 rounded-full bg-green text-[12px] font-medium uppercase tracking-[0.14em] text-white transition-colors hover:bg-green-dark">
             Keep order

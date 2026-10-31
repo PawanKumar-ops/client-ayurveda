@@ -2,7 +2,29 @@
 
 import { useEffect, useState, type ReactNode } from 'react'
 import { Icon } from '@iconify/react'
-import { store, ORDER_STATUSES, type Order, type OrderStatus } from '@/lib/store'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { ORDER_STATUSES, type Order, type OrderStatus } from '@/lib/order-types'
+import { deleteOrder, ordersQueryKey, updateOrder } from '@/lib/orders-client'
+
+/** Admin order mutations that keep the cached order list in sync with MongoDB. */
+export function useOrderActions() {
+  const qc = useQueryClient()
+  const sync = (o: Order) => qc.setQueryData<Order[]>(ordersQueryKey, (l) => l?.map((x) => (x.id === o.id ? o : x)))
+  const update = useMutation({
+    mutationFn: ({ id, patch }: { id: string; patch: { status?: OrderStatus; notes?: string } }) => updateOrder(id, patch),
+    onSuccess: sync,
+    onError: (e) => alert(`Could not update order: ${(e as Error).message}`),
+  })
+  const remove = useMutation({
+    mutationFn: deleteOrder,
+    onSuccess: ({ id }) => qc.setQueryData<Order[]>(ordersQueryKey, (l) => l?.filter((x) => x.id !== id)),
+    onError: (e) => alert(`Could not delete order: ${(e as Error).message}`),
+  })
+  return {
+    update: (id: string, patch: { status?: OrderStatus; notes?: string }) => update.mutate({ id, patch }),
+    remove: (id: string, onDone?: () => void) => remove.mutate(id, { onSuccess: () => onDone?.() }),
+  }
+}
 
 export const inr = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN')
 export const fmtDate = (s: string) => new Date(s).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -196,6 +218,7 @@ export function Donut({ data }: { data: { label: OrderStatus; value: number }[] 
 /* ---------- order drawer ---------- */
 
 export function OrderDrawer({ order, onClose }: { order: Order | null; onClose: () => void }) {
+  const actions = useOrderActions()
   const [notes, setNotes] = useState('')
   useEffect(() => setNotes(order?.notes ?? ''), [order?.id])
   const o = order
@@ -239,7 +262,7 @@ export function OrderDrawer({ order, onClose }: { order: Order | null; onClose: 
                 <label className="text-[12px] uppercase tracking-[0.12em] text-ink/50">Update status</label>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {ORDER_STATUSES.map((s) => (
-                    <button key={s} onClick={() => store.updateOrder(o.id, { status: s })} className={`rounded-full border px-3 py-1.5 text-[12px] transition-colors ${o.status === s ? 'border-ink bg-ink text-white' : 'border-ink/15 text-ink hover:border-ink/40'}`}>{s}</button>
+                    <button key={s} onClick={() => actions.update(o.id, { status: s })} className={`rounded-full border px-3 py-1.5 text-[12px] transition-colors ${o.status === s ? 'border-ink bg-ink text-white' : 'border-ink/15 text-ink hover:border-ink/40'}`}>{s}</button>
                   ))}
                 </div>
               </div>
@@ -282,13 +305,13 @@ export function OrderDrawer({ order, onClose }: { order: Order | null; onClose: 
 
               <div>
                 <label htmlFor="notes" className="text-[12px] uppercase tracking-[0.12em] text-ink/50">Internal notes</label>
-                <textarea id="notes" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} onBlur={() => store.updateOrder(o.id, { notes })} placeholder="Add a note for your team…" className="mt-2 w-full resize-none rounded-xl border border-ink/15 bg-white p-3 text-[13px] outline-none focus:border-ink" />
+                <textarea id="notes" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} onBlur={() => { if (notes !== o.notes) actions.update(o.id, { notes }) }} placeholder="Add a note for your team…" className="mt-2 w-full resize-none rounded-xl border border-ink/15 bg-white p-3 text-[13px] outline-none focus:border-ink" />
               </div>
             </div>
             <footer className="flex gap-2 border-t border-ink/10 px-6 py-4">
               <button onClick={() => window.print()} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full border border-ink/20 text-[13px] text-ink hover:border-ink"><Icon icon="solar:printer-linear" className="size-4" />Print invoice</button>
               <button
-                onClick={() => { if (confirm(`Delete order #${o.id}?`)) { store.deleteOrder(o.id); onClose() } }}
+                onClick={() => { if (confirm(`Delete order #${o.id}?`)) actions.remove(o.id, onClose) }}
                 className="grid size-11 place-items-center rounded-full border border-ink/20 text-[#9b3a2e] hover:border-[#9b3a2e]"
                 aria-label="Delete order"
               >

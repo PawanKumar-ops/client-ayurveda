@@ -7,7 +7,8 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CartDrawer from '@/components/CartDrawer'
 import CancelOrderModal from '@/components/CancelOrderModal'
-import { useStore, type Order, type OrderStatus } from '@/lib/store'
+import { TRACKING_ID_PATTERN, normalizeTrackingId as normId, publicImageSrc, type Order, type OrderStatus } from '@/lib/order-types'
+import { trackOrder } from '@/lib/orders-client'
 import Link from 'next/link'
 
 const RECENT_KEY = 'yubhi-track-recent'
@@ -15,7 +16,6 @@ const inr = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN')
 const day = (d: Date) => d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })
 const stamp = (d: Date) => d.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })
 const addDays = (d: Date, n: number) => new Date(+d + n * 864e5)
-const normId = (s: string) => s.trim().toUpperCase().replace(/^#/, '')
 const STEPS: { s: OrderStatus; label: string; icon: string; note: string }[] = [
   { s: 'Pending', label: 'Order placed', icon: 'solar:bag-check-linear', note: 'We have received your order.' },
   { s: 'Confirmed', label: 'Confirmed', icon: 'solar:clipboard-check-linear', note: 'Your order is confirmed and being packed.' },
@@ -32,12 +32,12 @@ function timeline(o: Order) {
 }
 
 export default function TrackPage() {
-  const { orders } = useStore()
   const [id, setId] = useState('')
   const [contact, setContact] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [found, setFound] = useState<string | null>(null)
+  const [order, setOrder] = useState<Order | null>(null)
+  const [trackedContact, setTrackedContact] = useState('')
   const [recent, setRecent] = useState<string[]>([])
   const [hydrated, setHydrated] = useState(false)
 
@@ -55,34 +55,33 @@ export default function TrackPage() {
   }, [])
   /* eslint-enable react-hooks/set-state-in-effect */
   const [copied, setCopied] = useState(false)
-  const order = orders.find((o) => o.id === found) ?? null
   useEffect(() => { document.title = 'Track your order — yubhi ayurveda' }, [])
 
-  const lookup = (e: React.FormEvent) => {
+  const lookup = async (e: React.FormEvent) => {
     e.preventDefault()
     const key = normId(id)
-    const c = contact.trim().toLowerCase().replace(/\s/g, '')
-    const normalizedPhone = c.replace(/\D/g, '').replace(/^91(?=\d{10}$)/, '')
-    if (!/^IW\d{6,}$/.test(key)) return setError('Order IDs look like IW40211037 — please check your confirmation email.')
+    const c = contact.trim()
+    if (!TRACKING_ID_PATTERN.test(key)) return setError('Tracking IDs look like YAK7M2Q9X4PD — please check your confirmation email.')
     if (!c) return setError('Enter the email or mobile number used at checkout.')
     setError('')
     setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
-      const o = orders.find((x) => x.id === key)
-      if (!o || (o.customer.email.toLowerCase() !== c && o.customer.phone !== normalizedPhone)) {
-        setFound(null)
-        return setError('We couldn’t find an order matching those details. Check the order ID and contact info, or reach our care team.')
-      }
-      setFound(o.id)
+    try {
+      const o = await trackOrder(key, c)
+      setOrder(o)
+      setTrackedContact(c)
       history.replaceState(null, '', `/track?id=${o.id}`)
       const next = [o.id, ...recent.filter((r) => r !== o.id)].slice(0, 3)
       setRecent(next)
       localStorage.setItem(RECENT_KEY, JSON.stringify(next))
-    }, 600)
+    } catch (err) {
+      setOrder(null)
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const reset = () => { setFound(null); setContact(''); history.replaceState(null, '', '/track') }
+  const reset = () => { setOrder(null); setContact(''); setTrackedContact(''); history.replaceState(null, '', '/track') }
   const copy = () => { navigator.clipboard?.writeText(order!.id); setCopied(true); setTimeout(() => setCopied(false), 1500) }
 
   return (
@@ -112,10 +111,10 @@ export default function TrackPage() {
             <form onSubmit={lookup} noValidate className="max-w-[640px]">
               <div className="space-y-4">
                 <label className="block">
-                  <span className="mb-2 block text-[12px] uppercase tracking-[0.14em] text-ink/60">Order ID *</span>
+                  <span className="mb-2 block text-[12px] uppercase tracking-[0.14em] text-ink/60">Tracking ID *</span>
                   <span className="relative block">
                     <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[15px] text-ink/40">#</span>
-                    <input value={id} onChange={(e) => { setId(e.target.value); setError('') }} placeholder="IW40211037" autoComplete="off" spellCheck={false}
+                    <input value={id} onChange={(e) => { setId(e.target.value); setError('') }} placeholder="YAK7M2Q9X4PD" autoComplete="off" spellCheck={false}
                       className="h-14 w-full border border-ink/25 bg-white pl-8 pr-4 text-[15px] uppercase tracking-wide text-ink outline-none transition-colors placeholder:normal-case placeholder:text-ink/35 focus:border-ink" />
                   </span>
                 </label>
@@ -150,7 +149,7 @@ export default function TrackPage() {
 
             <aside className="space-y-[3px]">
               {[
-                { i: 'solar:letter-linear', t: 'Find your order ID', d: 'It’s in your confirmation email and SMS, starting with “IW”.' },
+                { i: 'solar:letter-linear', t: 'Find your tracking ID', d: 'It’s in your order confirmation email, starting with “YA”.' },
                 { i: 'solar:shield-check-linear', t: 'Your details stay private', d: 'We ask for your email or phone so only you can view the order.' },
                 { i: 'solar:wallet-money-linear', t: 'Cash on delivery', d: 'Keep the exact amount or UPI ready when your parcel arrives.' },
               ].map((x) => (
@@ -166,7 +165,7 @@ export default function TrackPage() {
             </aside>
           </div>
         ) : (
-          <OrderResult order={order} copied={copied} copy={copy} reset={reset} />
+          <OrderResult order={order} contact={trackedContact} onUpdate={setOrder} copied={copied} copy={copy} reset={reset} />
         )}
       </main>
 
@@ -176,7 +175,7 @@ export default function TrackPage() {
   )
 }
 
-function OrderResult({ order: o, copied, copy, reset }: { order: Order; copied: boolean; copy: () => void; reset: () => void }) {
+function OrderResult({ order: o, contact, onUpdate, copied, copy, reset }: { order: Order; contact: string; onUpdate: (o: Order) => void; copied: boolean; copy: () => void; reset: () => void }) {
   const { at, reached, eta, etaFrom } = timeline(o)
   const cancelled = o.status === 'Cancelled'
   const delivered = o.status === 'Delivered'
@@ -261,7 +260,7 @@ function OrderResult({ order: o, copied, copy, reset }: { order: Order; copied: 
           <ul className="mt-5 divide-y divide-ink/10">
             {o.items.map((it) => (
               <li key={it.title} className="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
-                <Image src={it.img} alt="" width={80} height={80} className="size-16 shrink-0 bg-white object-cover md:size-20" />
+                <Image src={publicImageSrc(it.img)} alt="" width={80} height={80} className="size-16 shrink-0 bg-white object-cover md:size-20" />
                 <div className="min-w-0 flex-1">
                   <p className="line-clamp-2 text-[14px] font-medium text-ink">{it.title}</p>
                   <p className="mt-1 text-[13px] text-ink/55">Qty {it.qty} · {inr(it.price)}</p>
@@ -282,7 +281,7 @@ function OrderResult({ order: o, copied, copy, reset }: { order: Order; copied: 
           <section className="bg-cream-soft p-6 md:p-8">
             <h3 className="text-[12px] uppercase tracking-[0.14em] text-ink/60">{o.pickup ? 'Pickup from' : 'Delivering to'}</h3>
             <p className="mt-3 text-[15px] font-medium text-ink">{o.customer.name}</p>
-            <p className="mt-1 text-[14px] leading-relaxed text-ink/70">{o.address}<br />{o.city}, {o.state}</p>
+            <p className="mt-1 text-[14px] leading-relaxed text-ink/70">{o.address}<br />{o.city}, {o.state} {o.postalcode}</p>
             <p className="mt-2 text-[13px] text-ink/55">+91 ••••••{o.customer.phone.slice(-4)}</p>
           </section>
           <section className="bg-cream-soft p-6 md:p-8">
@@ -314,7 +313,7 @@ function OrderResult({ order: o, copied, copy, reset }: { order: Order; copied: 
           </section>
         </div>
       </div>
-      <CancelOrderModal order={o} open={cancelOpen} onClose={() => setCancelOpen(false)} />
+      <CancelOrderModal order={o} contact={contact} open={cancelOpen} onClose={() => setCancelOpen(false)} onCancelled={onUpdate} />
     </div>
   )
 }

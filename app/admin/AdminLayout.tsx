@@ -7,7 +7,8 @@ import { useRouter } from 'next/navigation'
 import { ADMIN_EMAIL } from '@/lib/admin-email'
 import { useQuery } from '@tanstack/react-query'
 import { fetchMessages, messagesQueryKey } from '@/lib/messages-client'
-import { useStore, type Order } from '@/lib/store'
+import type { Order } from '@/lib/order-types'
+import { fetchOrders, ordersQueryKey } from '@/lib/orders-client'
 import { type Tab, type Range, OrderDrawer, TAB_PATH } from './ui'
 
 const NAV: { id: Tab; label: string; icon: string }[] = [
@@ -27,7 +28,8 @@ export default function AdminLayout({ tab, children }: { tab: Tab; children: (ct
 
 function Dashboard({ tab, children }: { tab: Tab; children: (ctx: Ctx) => ReactNode }) {
   const router = useRouter()
-  const { orders } = useStore()
+  const ordersQuery = useQuery({ queryKey: ordersQueryKey, queryFn: fetchOrders, refetchInterval: 60_000 })
+  const orders = ordersQuery.data ?? []
   const messagesQuery = useQuery({
     queryKey: messagesQueryKey,
     queryFn: fetchMessages,
@@ -115,7 +117,13 @@ function Dashboard({ tab, children }: { tab: Tab; children: (ctx: Ctx) => ReactN
         </header>
 
         <main className="min-w-0 px-3 py-5 sm:px-4 md:px-8 md:py-8">
-          {children({ orders, messages, range, query, openOrder: (o) => setOpenId(o.id) })}
+          {ordersQuery.isError && (
+            <p role="alert" className="mb-4 flex items-center gap-2 rounded-xl bg-[#f5e1de] px-4 py-3 text-[13px] text-[#9b3a2e]">
+              <Icon icon="solar:danger-circle-linear" className="size-4 shrink-0" />Could not load orders: {(ordersQuery.error as Error).message}
+              <button onClick={() => ordersQuery.refetch()} className="ml-auto underline">Retry</button>
+            </p>
+          )}
+          {ordersQuery.isPending ? <p className="py-16 text-center text-[13px] text-ink/55">Loading orders…</p> : children({ orders, messages, range, query, openOrder: (o) => setOpenId(o.id) })}
         </main>
       </div>
 

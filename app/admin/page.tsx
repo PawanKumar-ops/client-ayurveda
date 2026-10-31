@@ -3,7 +3,8 @@
 import { useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Icon } from '@iconify/react'
-import { type Order, type Message } from '@/lib/store'
+import type { Order } from '@/lib/order-types'
+import type { MessageRecord as Message } from '@/lib/message-model'
 import { ago, initials, type Range, Card, Stat, Empty, OrdersTable, TAB_PATH } from './ui'
 import AdminLayout from './AdminLayout'
 

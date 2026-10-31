@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Icon } from '@iconify/react'
 import { pageRange } from '@/lib/pagination'
-import { store, ORDER_STATUSES, type Order, type OrderStatus } from '@/lib/store'
-import { fmtDate, download, Card, OrdersTable } from '../ui'
+import { ORDER_STATUSES, type Order, type OrderStatus } from '@/lib/order-types'
+import { fmtDate, download, Card, OrdersTable, useOrderActions } from '../ui'
 import AdminLayout from '../AdminLayout'
 
 function OrdersView({ orders, openOrder, query }: { orders: Order[]; openOrder: (o: Order) => void; query: string }) {
@@ -13,6 +13,7 @@ function OrdersView({ orders, openOrder, query }: { orders: Order[]; openOrder: 
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const PER = 10
+  const actions = useOrderActions()
   const list = useMemo(() => {
     const q = query.toLowerCase()
     const l = orders.filter((o) => (status === 'All' || o.status === status) && (!q || `${o.id} ${o.customer.name} ${o.customer.email} ${o.customer.phone} ${o.city}`.toLowerCase().includes(q)))
@@ -53,7 +54,7 @@ function OrdersView({ orders, openOrder, query }: { orders: Order[]; openOrder: 
         <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl bg-ink px-4 py-2.5 text-[12px] text-white">
           <span className="mr-2">{selected.size} selected</span>
           {(['Confirmed', 'Shipped', 'Delivered', 'Cancelled'] as OrderStatus[]).map((s) => (
-            <button key={s} onClick={() => { selected.forEach((id) => store.updateOrder(id, { status: s })); setSelected(new Set()) }} className="rounded-full bg-white/10 px-3 py-1 hover:bg-white/20">Mark {s.toLowerCase()}</button>
+            <button key={s} onClick={() => { selected.forEach((id) => actions.update(id, { status: s })); setSelected(new Set()) }} className="rounded-full bg-white/10 px-3 py-1 hover:bg-white/20">Mark {s.toLowerCase()}</button>
           ))}
           <button onClick={() => exportCsv(orders.filter((o) => selected.has(o.id)))} className="rounded-full bg-white/10 px-3 py-1 hover:bg-white/20">Export</button>
           <button onClick={() => setSelected(new Set())} className="ml-auto text-white/60 hover:text-white">Clear</button>

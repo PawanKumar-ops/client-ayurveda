@@ -1,5 +1,6 @@
 import { connectToDatabase } from '@/lib/mongodb'
 import { MessageModel, type MessageRecord } from '@/lib/message-model'
+import { isAdmin, unauthorized } from '@/lib/admin-session'
 
 const jsonHeaders = { 'Cache-Control': 'no-store' }
 
@@ -24,6 +25,7 @@ function serialize(message: MessageRecord) {
 }
 
 export async function GET() {
+  if (!(await isAdmin())) return unauthorized()
   await connectToDatabase()
   const messages = await MessageModel.find().sort({ date: -1 }).lean<MessageRecord[]>()
   return response(messages.map(serialize))
@@ -55,6 +57,7 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  if (!(await isAdmin())) return unauthorized()
   const body = await request.json() as { id?: string; patch?: Partial<MessageRecord> }
   if (!body.id || !body.patch || typeof body.patch !== 'object') {
     return response({ error: 'Message id and patch are required' }, { status: 400 })
@@ -73,6 +76,7 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  if (!(await isAdmin())) return unauthorized()
   const body = await request.json() as { id?: string }
   if (!body.id) return response({ error: 'Message id is required' }, { status: 400 })
 

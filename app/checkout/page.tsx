@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CartDrawer, { useCart, toNum, inr, type CartItem } from '@/components/CartDrawer'
-import { store } from '@/lib/store'
+import { placeOrder as submitOrder } from '@/lib/orders-client'
 
 const STATES = [
   'Andaman and Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chandigarh', 'Chhattisgarh',
@@ -208,7 +208,8 @@ export default function CheckoutPage() {
   const [method, setMethod] = useState<(typeof METHODS)[number]['id']>('standard')
   const [agree, setAgree] = useState(false)
   const [placing, setPlacing] = useState(false)
-  const [order, setOrder] = useState<null | { id: string; items: CartItem[]; totals: Totals; addr: Addr; count: number }>(null)
+  const [placeError, setPlaceError] = useState('')
+  const [order, setOrder] = useState<null | { id: string; items: CartItem[]; totals: Totals; addr: Addr; count: number; emailSent: boolean }>(null)
   const [summaryOpen, setSummaryOpen] = useState(false)
 
   useEffect(() => {
@@ -251,36 +252,26 @@ export default function CheckoutPage() {
     go(2)
   }
 
-  const placeOrder = () => {
+  const placeOrder = async () => {
     if (!agree || placing) return
     setPlacing(true)
-    setTimeout(() => {
-      const selectedMethod = METHODS.find((option) => option.id === method)!
-      const snapshot = { id: 'IW' + Date.now().toString().slice(-8), items: cart.items, totals, addr, count: cart.count }
-      store.addOrder({
-        id: snapshot.id,
-        date: new Date().toISOString(),
-        customer: { name: `${addr.firstname} ${addr.lastname}`, email: addr.email, phone: addr.phone },
-        address: addr.address1,
-        city: addr.city,
-        state: addr.state,
-        pickup: false,
-        method: selectedMethod.label,
-        items: cart.items.map((item) => ({ title: item.title, img: item.img, price: toNum(item.price), qty: item.qty })),
-        subtotal: totals.subtotal,
-        discount: 0,
-        shipping: totals.shipping - totals.shipDiscount,
-        total: totals.total,
-        code: null,
-        payment: 'Cash on Delivery',
-        status: 'Pending',
-        notes: '',
+    setPlaceError('')
+    try {
+      const { order: saved, emailSent } = await submitOrder({
+        customer: { firstname: addr.firstname, lastname: addr.lastname, email: addr.email, phone: addr.phone },
+        address: { address1: addr.address1, address2: addr.address2, city: addr.city, state: addr.state, postalcode: addr.postalcode },
+        items: cart.items.map((item) => ({ title: item.title, qty: item.qty })),
       })
+      // Totals shown on the confirmation come from the server-priced order.
+      const confirmed: Totals = { ...totals, subtotal: saved.subtotal, shipping: saved.shipping, shipDiscount: 0, total: saved.total }
+      setOrder({ id: saved.id, items: cart.items, totals: confirmed, addr, count: cart.count, emailSent })
       cart.items.forEach((i) => cart.remove(i.title))
-      setOrder(snapshot)
-      setPlacing(false)
       window.scrollTo({ top: 0 })
-    }, 900)
+    } catch (err) {
+      setPlaceError(err instanceof Error ? err.message : 'We could not place your order. Please try again.')
+    } finally {
+      setPlacing(false)
+    }
   }
 
   let body: ReactNode
@@ -292,8 +283,15 @@ export default function CheckoutPage() {
         </span>
         <h1 className="font-serif-display mt-6 text-[32px] text-ink sm:text-[40px]">Thank you, {order.addr.firstname}.</h1>
         <p className="mt-3 text-[15px] text-ink/70">
-          Your order <strong className="text-ink">#{order.id}</strong> has been placed. A confirmation has been sent to {order.addr.email}.
+          Your order has been placed successfully.{' '}
+          {order.emailSent
+            ? <>A confirmation with your tracking ID has been sent to <strong className="text-ink">{order.addr.email}</strong>.</>
+            : <>We couldn’t send the confirmation email right now, so please save your tracking ID below.</>}
         </p>
+        <div className="mx-auto mt-6 inline-flex flex-col items-center rounded-2xl bg-green-soft px-8 py-4">
+          <span className="text-[11px] uppercase tracking-[0.16em] text-ink/60">Tracking ID</span>
+          <span className="mt-1 text-[22px] font-semibold tracking-[0.12em] text-green-dark">{order.id}</span>
+        </div>
         <div className="mt-10 grid gap-[3px] text-left sm:grid-cols-2">
           <div className="bg-cream p-5">
             <p className="text-[12px] uppercase tracking-[0.12em] text-ink/60">Delivering to</p>
@@ -314,9 +312,14 @@ export default function CheckoutPage() {
         <div className="mt-[3px] flex justify-between bg-cream px-5 py-4 text-[15px] font-semibold text-ink">
           <span>Total ({order.count} items)</span><span>{inr(order.totals.total)}</span>
         </div>
-        <button onClick={() => router.push('/shop')} className="mt-10 h-12 bg-ink px-10 text-[14px] text-white transition-colors hover:bg-green-dark">
-          Continue shopping
-        </button>
+        <div className="mt-10 flex flex-wrap justify-center gap-3">
+          <button onClick={() => router.push(`/track?id=${order.id}`)} className="h-12 border border-ink px-10 text-[14px] text-ink transition-colors hover:bg-cream">
+            Track order
+          </button>
+          <button onClick={() => router.push('/shop')} className="h-12 bg-ink px-10 text-[14px] text-white transition-colors hover:bg-green-dark">
+            Continue shopping
+          </button>
+        </div>
       </div>
     )
   } else if (!cart.items.length) {
@@ -503,6 +506,11 @@ export default function CheckoutPage() {
                   {placing && <Icon icon="svg-spinners:ring-resize" className="size-4" />}
                   {placing ? 'Placing order…' : `Place order · ${inr(totals.total)}`}
                 </button>
+                {placeError && (
+                  <p role="alert" className="mt-4 flex items-start gap-2 bg-[#f5e1de] px-4 py-3 text-[13px] leading-relaxed text-[#9b3a2e]">
+                    <Icon icon="solar:danger-circle-linear" className="mt-0.5 size-4 shrink-0" />Order not placed: {placeError}
+                  </p>
+                )}
                 <p className="mt-4 flex items-center gap-2 text-[12px] text-ink/60">
                   <Icon icon="solar:shield-check-linear" className="size-4" /> Secure checkout · Easy 7-day returns
                 </p>
