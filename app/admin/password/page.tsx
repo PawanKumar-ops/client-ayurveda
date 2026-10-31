@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Icon } from '@iconify/react'
-import { auth, ADMIN_EMAIL } from '@/lib/auth'
+import { ADMIN_EMAIL } from '@/lib/admin-email'
 import { Card } from '../ui'
 import AdminLayout from '../AdminLayout'
 
@@ -10,6 +10,7 @@ function PasswordView() {
   const [f, setF] = useState({ current: '', next: '', confirm: '' })
   const [show, setShow] = useState(false)
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const [busy, setBusy] = useState(false)
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => { setF({ ...f, [k]: e.target.value }); setMsg(null) }
   const checks = [
     { ok: f.next.length >= 6, l: 'At least 6 characters' },
@@ -17,10 +18,23 @@ function PasswordView() {
     { ok: !!f.next && f.next === f.confirm, l: 'Both new passwords match' },
   ]
   const strength = [f.next.length >= 8, /[A-Z]/.test(f.next) && /[a-z]/.test(f.next), /\d/.test(f.next), /[^A-Za-z0-9]/.test(f.next)].filter(Boolean).length
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!checks.every((c) => c.ok)) return setMsg({ ok: false, text: 'Please meet all the requirements below.' })
-    if (!auth.changePassword(f.current, f.next)) return setMsg({ ok: false, text: 'Current password is incorrect.' })
+    setBusy(true)
+    try {
+      const res = await fetch('/api/admin/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ current: f.current, next: f.next }),
+      })
+      const body = (await res.json().catch(() => ({}))) as { error?: string }
+      if (!res.ok) return setMsg({ ok: false, text: body.error || 'Could not update password.' })
+    } catch {
+      return setMsg({ ok: false, text: 'Could not reach the server. Try again.' })
+    } finally {
+      setBusy(false)
+    }
     setF({ current: '', next: '', confirm: '' })
     setMsg({ ok: true, text: 'Password updated. Use it next time you sign in.' })
   }
@@ -45,7 +59,7 @@ function PasswordView() {
             <input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} className="size-4 accent-[#24382d]" />Show passwords
           </label>
           {msg && <p role="status" className={`flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-[13px] ${msg.ok ? 'bg-green-soft text-green-dark' : 'bg-[#f5e1de] text-[#9b3a2e]'}`}><Icon icon={msg.ok ? 'solar:check-circle-linear' : 'solar:danger-circle-linear'} className="size-4 shrink-0" />{msg.text}</p>}
-          <button type="submit" className="h-11 rounded-full bg-ink px-6 text-[13px] text-white hover:bg-green-dark">Update password</button>
+          <button type="submit" disabled={busy} className="h-11 rounded-full bg-ink px-6 text-[13px] text-white hover:bg-green-dark disabled:opacity-60">{busy ? 'Updating…' : 'Update password'}</button>
         </form>
       </Card>
       <Card title="Requirements" className="h-fit">
@@ -56,7 +70,7 @@ function PasswordView() {
             </li>
           ))}
         </ul>
-        <p className="mt-5 border-t border-ink/8 pt-4 text-[12px] leading-relaxed text-ink/50">Sign-in email stays <span className="text-ink">{ADMIN_EMAIL}</span>. The password is stored on this device.</p>
+        <p className="mt-5 border-t border-ink/8 pt-4 text-[12px] leading-relaxed text-ink/50">Sign-in email stays <span className="text-ink">{ADMIN_EMAIL}</span>. The password is stored securely (hashed) in the database.</p>
       </Card>
     </div>
   )

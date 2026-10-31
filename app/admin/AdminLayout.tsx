@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useState, type ReactNode } from 'react'
+import { signOut, useSession } from 'next-auth/react'
 import { Icon } from '@iconify/react'
 import { useRouter } from 'next/navigation'
-import { auth, ADMIN_EMAIL } from '@/lib/auth'
+import { ADMIN_EMAIL } from '@/lib/admin-email'
 import { useQuery } from '@tanstack/react-query'
 import { fetchMessages, messagesQueryKey } from '@/lib/messages-client'
 import { useStore, type Order } from '@/lib/store'
@@ -19,11 +20,9 @@ type Ctx = { orders: Order[]; messages: Awaited<ReturnType<typeof fetchMessages>
 
 export default function AdminLayout({ tab, children }: { tab: Tab; children: (ctx: Ctx) => ReactNode }) {
   const router = useRouter()
-  const [authed, setAuthed] = useState(false)
-  const [checked, setChecked] = useState(false)
-  useEffect(() => { setAuthed(auth.isAuthed()); setChecked(true) }, [])
-  useEffect(() => { if (checked && !authed) router.replace('/') }, [checked, authed, router])
-  return checked && authed ? <Dashboard tab={tab}>{children}</Dashboard> : null
+  const { status } = useSession()
+  useEffect(() => { if (status === 'unauthenticated') router.replace('/') }, [status, router])
+  return status === 'authenticated' ? <Dashboard tab={tab}>{children}</Dashboard> : null
 }
 
 function Dashboard({ tab, children }: { tab: Tab; children: (ctx: Ctx) => ReactNode }) {
@@ -75,7 +74,7 @@ function Dashboard({ tab, children }: { tab: Tab; children: (ctx: Ctx) => ReactN
           <div className="mt-2 flex items-center gap-3 rounded-xl bg-white/5 px-3.5 py-3">
             <span className="grid size-8 place-items-center rounded-full bg-accent text-[12px] font-semibold text-footer">A</span>
             <div className="min-w-0 flex-1 text-[12px]"><p className="text-white">Admin</p><p className="truncate text-white/45">{ADMIN_EMAIL}</p></div>
-            <button onClick={() => { auth.logout(); router.push('/') }} title="Log out" aria-label="Log out" className="grid size-8 shrink-0 place-items-center rounded-full text-white/55 hover:bg-white/10 hover:text-white"><Icon icon="solar:logout-2-linear" className="size-[18px]" /></button>
+            <button onClick={() => signOut({ callbackUrl: '/' })} title="Log out" aria-label="Log out" className="grid size-8 shrink-0 place-items-center rounded-full text-white/55 hover:bg-white/10 hover:text-white"><Icon icon="solar:logout-2-linear" className="size-[18px]" /></button>
           </div>
         </div>
       </aside>

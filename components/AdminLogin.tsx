@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createPortal } from 'react-dom'
 import { Icon } from '@iconify/react'
-import { auth } from '@/lib/auth'
+import { signIn } from 'next-auth/react'
 
 export default function AdminLogin({ open, onClose }: { open: boolean; onClose: () => void }) {
   const router = useRouter()
@@ -12,6 +12,7 @@ export default function AdminLogin({ open, onClose }: { open: boolean; onClose: 
   const [password, setPassword] = useState('')
   const [show, setShow] = useState(false)
   const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
   const first = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -27,9 +28,12 @@ export default function AdminLogin({ open, onClose }: { open: boolean; onClose: 
 
   if (!open) return null
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (auth.login(email, password)) { onClose(); router.push('/admin') }
+    setBusy(true)
+    const res = await signIn('credentials', { email, password, redirect: false })
+    setBusy(false)
+    if (res?.ok) { onClose(); router.push('/admin') }
     else setError('Incorrect email or password.')
   }
 
@@ -62,8 +66,8 @@ export default function AdminLogin({ open, onClose }: { open: boolean; onClose: 
             </span>
           </label>
           {error && <p role="alert" className="flex items-center gap-2 rounded-xl bg-[#f5e1de] px-3.5 py-2.5 text-[13px] text-[#9b3a2e]"><Icon icon="solar:danger-circle-linear" className="size-4 shrink-0" />{error}</p>}
-          <button type="submit" className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-ink text-[13px] uppercase tracking-[0.16em] text-white transition-colors hover:bg-green-dark">
-            Sign in <Icon icon="solar:arrow-right-linear" className="size-4" />
+          <button type="submit" disabled={busy} className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-ink text-[13px] uppercase tracking-[0.16em] text-white transition-colors hover:bg-green-dark disabled:opacity-60">
+            {busy ? 'Signing in…' : 'Sign in'} <Icon icon="solar:arrow-right-linear" className="size-4" />
           </button>
         </div>
       </form>
